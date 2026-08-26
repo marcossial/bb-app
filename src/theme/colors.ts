@@ -1,9 +1,9 @@
 export const colors = {
-  bgBase: '#0A0A0F',
-  bgCard: '#16161C',
-  accentLime: '#A6FF3D',
-  accentIndigo: '#5B6EF5', // gradiente pode usar #5B6EF5 a #7B61FF
+  bgBase: '#0D0E15',
+  bgCard: '#13141F',
+  accentLime: '#9DFF20',
+  accentIndigo: '#4355F9',
   accentDanger: '#FF3B6E',
   textPrimary: '#FFFFFF',
-  textSecondary: '#9CA3AF',
+  textSecondary: '#8B92A5',
 };

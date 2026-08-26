@@ -12,11 +12,14 @@ export default function OnboardingStep2() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.titleShadow}>BIGGER BET</Text>
+        <Text style={styles.title}>BIGGER BET</Text>
+      </View>
       <View style={styles.content}>
-        <View style={styles.imageContainer}>
-          <BookOpen size={120} color={colors.accentIndigo} />
+        <View style={styles.imageCard}>
+          <BookOpen size={120} color={colors.accentLime} />
         </View>
-        <Text style={styles.title}>LITERACIA DIGITAL</Text>
         <Text style={styles.description}>
           Entenda como funcionam as casas de aposta e aprenda a identificar os gatilhos.
         </Text>
@@ -29,7 +32,7 @@ export default function OnboardingStep2() {
         </View>
         <Button 
           title="CONTINUAR" 
-          variant="secondary" 
+          variant="primary" 
           fullWidth 
           onPress={() => router.push('/onboarding/step-3')} 
         />
@@ -43,32 +46,52 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.bgBase,
   },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
+  header: {
     alignItems: 'center',
-    paddingHorizontal: 32,
-  },
-  imageContainer: {
-    marginBottom: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 200,
+    marginTop: 20,
+    marginBottom: 40,
   },
   title: {
     fontFamily: typography.fonts.condensed,
-    fontSize: typography.sizes.xxxl,
+    fontSize: 56,
     color: colors.textPrimary,
-    marginBottom: 16,
-    textAlign: 'center',
     letterSpacing: 2,
+    position: 'absolute',
+  },
+  titleShadow: {
+    fontFamily: typography.fonts.condensed,
+    fontSize: 56,
+    color: colors.accentLime,
+    letterSpacing: 2,
+    transform: [{ translateX: -4 }, { translateY: 4 }],
+  },
+  content: {
+    flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: 32,
+  },
+  imageCard: {
+    width: '100%',
+    aspectRatio: 0.8,
+    backgroundColor: 'rgba(157, 255, 32, 0.05)',
+    borderRadius: 40,
+    borderWidth: 2,
+    borderColor: colors.accentLime,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 40,
+    shadowColor: colors.accentLime,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 10,
   },
   description: {
     fontFamily: typography.fonts.regular,
-    fontSize: typography.sizes.md,
-    color: colors.textSecondary,
+    fontSize: 18,
+    color: colors.textPrimary,
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 28,
   },
   footer: {
     padding: 32,

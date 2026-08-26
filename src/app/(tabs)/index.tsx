@@ -1,76 +1,152 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { StatBadge } from '../../components/ui/StatBadge';
-import { Button } from '../../components/ui/Button';
-import { Card } from '../../components/ui/Card';
-import { useAppStore } from '../../store/useAppStore';
-import { colors } from '../../theme/colors';
-import { typography } from '../../theme/typography';
-import { Calendar, Frown, DollarSign, AlertOctagon } from 'lucide-react-native';
+import {
+  Activity,
+  Box,
+  Car,
+  Frown,
+  Home as HomeIcon,
+  UserRound,
+} from "lucide-react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Button } from "../../components/ui/Button";
+import { useAppStore } from "../../store/useAppStore";
+import { colors } from "../../theme/colors";
+import { typography } from "../../theme/typography";
 
 export default function Home() {
   const { balance, sadnessLevel, luckyDays, assets, sellAsset } = useAppStore();
 
-  const formattedBalance = balance.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const formattedBalance = balance.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        
-        {/* Header - Balance */}
-        <View style={styles.header}>
-          <View style={styles.riskBadge}>
-            <AlertOctagon size={12} color={colors.accentDanger} />
-            <Text style={styles.riskText}>RISCO DE FALÊNCIA: CRÍTICO</Text>
+        {/* Header - Bigger Bet */}
+        <View style={styles.appHeader}>
+          <View style={styles.logoContainer}>
+            <View style={styles.alienIconBadge}>
+              <UserRound size={24} color={colors.accentLime} />
+            </View>
+            <Text style={styles.logoText}>BIGGER BET</Text>
           </View>
+          <View style={styles.smallAlienBadge}>
+            <UserRound size={16} color={colors.textSecondary} />
+          </View>
+          <View style={styles.headerNeonBorder} />
+        </View>
+
+        {/* Header - Balance */}
+        <View style={styles.balanceSection}>
           <Text style={styles.balanceLabel}>SALDO ATUAL DE DESESPERO</Text>
           <Text style={styles.balanceValue}>{formattedBalance}</Text>
+
+          <View style={styles.riskBadge}>
+            <View style={styles.riskDot} />
+            <Text style={styles.riskText}>RISCO DE FALÊNCIA: CRÍTICO</Text>
+          </View>
         </View>
 
         {/* Stats */}
-        <Text style={styles.sectionTitle}>Estatísticas</Text>
+        <View style={styles.sectionHeader}>
+          <Activity size={20} color={colors.accentIndigo} />
+          <Text style={styles.sectionTitle}>Estatísticas</Text>
+        </View>
+
         <View style={styles.statsRow}>
-          <StatBadge 
-            label="Dias de Sorte" 
-            value={luckyDays.toString()} 
-            icon={Calendar} 
-            color={colors.accentLime} 
-          />
-          <StatBadge 
-            label="Nível de Tristeza" 
-            value={`${sadnessLevel} XP`} 
-            icon={Frown} 
-            color={colors.accentIndigo} 
-          />
+          <View
+            style={[styles.statCard, { borderColor: "rgba(67, 85, 249, 0.2)" }]}
+          >
+            <View style={styles.statIconContainer}>
+              <Box size={24} color={colors.accentIndigo} />
+            </View>
+            <Text style={styles.statCardLabel}>DIAS DE SORTE</Text>
+            <Text
+              style={[styles.statCardValue, { color: colors.accentIndigo }]}
+            >
+              {luckyDays}
+            </Text>
+          </View>
+
+          <View
+            style={[
+              styles.statCard,
+              { borderColor: "rgba(157, 255, 32, 0.2)" },
+            ]}
+          >
+            <View style={styles.statIconContainer}>
+              <Frown size={24} color={colors.accentLime} />
+            </View>
+            <Text style={styles.statCardLabel}>NÍVEL DE TRISTEZA</Text>
+            <View style={styles.statValueRow}>
+              <Text
+                style={[styles.statCardValue, { color: colors.accentLime }]}
+              >
+                {sadnessLevel}
+              </Text>
+              <Text style={styles.statCardUnit}>XP</Text>
+            </View>
+            <View style={styles.progressBarBg}>
+              <View
+                style={[
+                  styles.progressBarFill,
+                  { width: `${Math.min(sadnessLevel, 100)}%` },
+                ]}
+              />
+            </View>
+          </View>
         </View>
 
         {/* Assets to Sell */}
-        <Text style={styles.sectionTitle}>Meus Bens (Vender para jogar)</Text>
+        <View style={styles.sectionHeaderBetween}>
+          <View style={styles.sectionHeader}>
+            <Box size={20} color={colors.accentIndigo} />
+            <Text style={styles.sectionTitle}>Meus Bens</Text>
+          </View>
+          <Text style={styles.assetsCountText}>
+            {assets.filter((a) => !a.sold).length} ITENS RESTANTES
+          </Text>
+        </View>
+
         <View style={styles.assetsList}>
           {assets.map((asset) => (
-            <Card key={asset.id} style={styles.assetCard}>
+            <View key={asset.id} style={styles.assetCard}>
+              <View style={styles.assetIconBox}>
+                {asset.name.toLowerCase().includes("casa") ? (
+                  <HomeIcon size={24} color={colors.textSecondary} />
+                ) : (
+                  <Car size={24} color={colors.textSecondary} />
+                )}
+              </View>
               <View style={styles.assetInfo}>
-                <Text style={[styles.assetName, asset.sold && styles.assetNameSold]}>
+                <Text
+                  style={[styles.assetName, asset.sold && styles.assetNameSold]}
+                >
                   {asset.name}
                 </Text>
                 <Text style={styles.assetValue}>
-                  {asset.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                  Valor:{" "}
+                  {asset.value.toLocaleString("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
+                  })}
                 </Text>
               </View>
-              <Button 
-                title={asset.sold ? 'VENDIDO' : 'VENDER'} 
-                variant={asset.sold ? 'ghost' : 'danger'} 
+              <Button
+                title={asset.sold ? "VENDIDO" : "VENDER"}
+                variant={asset.sold ? "ghost" : "outline-neon"}
                 onPress={() => sellAsset(asset.id)}
                 disabled={asset.sold}
                 style={styles.sellButton}
               />
-            </Card>
+            </View>
           ))}
         </View>
-        
+
         {/* Extra spacing for tab bar */}
-        <View style={{ height: 100 }} />
+        <View style={{ height: 120 }} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -84,64 +160,203 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 24,
   },
-  header: {
-    alignItems: 'center',
-    marginBottom: 40,
-    marginTop: 20,
+  appHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 32,
+    position: "relative",
+    paddingBottom: 24,
   },
-  riskBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 59, 110, 0.1)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 100,
+  headerNeonBorder: {
+    position: "absolute",
+    bottom: 0,
+    left: -24,
+    right: -24,
+    height: 1,
+    backgroundColor: colors.accentLime,
+    opacity: 0.5,
+    shadowColor: colors.accentLime,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
+    borderBottomLeftRadius: 50,
+    borderBottomRightRadius: 50,
+  },
+  logoContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  alienIconBadge: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 59, 110, 0.3)',
-    marginBottom: 16,
-    gap: 6,
+    borderColor: colors.accentLime,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(157, 255, 32, 0.05)",
   },
-  riskText: {
-    color: colors.accentDanger,
-    fontFamily: typography.fonts.bold,
-    fontSize: 10,
+  logoText: {
+    fontFamily: typography.fonts.condensed,
+    fontSize: 32,
+    color: colors.textPrimary,
     letterSpacing: 1,
+    textShadowColor: colors.accentLime,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 10,
+  },
+  smallAlienBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  balanceSection: {
+    alignItems: "center",
+    marginBottom: 40,
+    marginTop: 10,
   },
   balanceLabel: {
     color: colors.textSecondary,
     fontFamily: typography.fonts.regular,
     fontSize: typography.sizes.sm,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     letterSpacing: 1,
-    marginBottom: 8,
+    marginBottom: 4,
   },
   balanceValue: {
-    color: colors.textPrimary,
+    color: colors.accentLime,
     fontFamily: typography.fonts.condensed,
-    fontSize: 48,
+    fontSize: 56,
     textShadowColor: colors.accentLime,
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 20,
+    marginBottom: 16,
+  },
+  riskBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(157, 255, 32, 0.05)",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 100,
+    borderWidth: 1,
+    borderColor: "rgba(157, 255, 32, 0.3)",
+    gap: 8,
+  },
+  riskDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.accentLime,
+    shadowColor: colors.accentLime,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 5,
+  },
+  riskText: {
+    color: colors.accentLime,
+    fontFamily: typography.fonts.bold,
+    fontSize: 10,
+    letterSpacing: 1,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 16,
+  },
+  sectionHeaderBetween: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
   },
   sectionTitle: {
     color: colors.textPrimary,
     fontFamily: typography.fonts.bold,
     fontSize: typography.sizes.lg,
-    marginBottom: 16,
+  },
+  assetsCountText: {
+    color: colors.textSecondary,
+    fontFamily: typography.fonts.regular,
+    fontSize: 10,
+    letterSpacing: 1,
+    textTransform: "uppercase",
   },
   statsRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 16,
     marginBottom: 40,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: colors.bgCard,
+    borderRadius: 24,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.05)",
+  },
+  statIconContainer: {
+    marginBottom: 12,
+  },
+  statCardLabel: {
+    color: colors.textSecondary,
+    fontFamily: typography.fonts.regular,
+    fontSize: 10,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    marginBottom: 8,
+  },
+  statValueRow: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: 4,
+    marginBottom: 8,
+  },
+  statCardValue: {
+    fontFamily: typography.fonts.condensed,
+    fontSize: 32,
+  },
+  statCardUnit: {
+    color: colors.textSecondary,
+    fontFamily: typography.fonts.regular,
+    fontSize: 12,
+  },
+  progressBarBg: {
+    height: 4,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderRadius: 2,
+    overflow: "hidden",
+    marginTop: 4,
+  },
+  progressBarFill: {
+    height: "100%",
+    backgroundColor: colors.accentLime,
+    borderRadius: 2,
   },
   assetsList: {
     gap: 12,
   },
   assetCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 0,
+    marginBottom: 16,
+  },
+  assetIconBox: {
+    width: 64,
+    height: 64,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.1)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 16,
   },
   assetInfo: {
     flex: 1,
@@ -154,7 +369,7 @@ const styles = StyleSheet.create({
   },
   assetNameSold: {
     color: colors.textSecondary,
-    textDecorationLine: 'line-through',
+    textDecorationLine: "line-through",
   },
   assetValue: {
     color: colors.textSecondary,
@@ -162,7 +377,8 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.sm,
   },
   sellButton: {
-    height: 40,
+    height: 36,
     paddingHorizontal: 16,
-  }
+    borderRadius: 18,
+  },
 });

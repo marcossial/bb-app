@@ -1,8 +1,9 @@
 export const typography = {
   fonts: {
-    condensed: 'BebasNeue_400Regular', // Seremos dependentes de carregar esta fonte no _layout
-    regular: 'System', // Fallback
-    bold: 'System', // Fallback
+    condensed: 'BebasNeue_400Regular', // Usado como fallback/placeholder para Moderniz
+    regular: 'FunnelSans_400Regular',
+    bold: 'FunnelSans_700Bold',
+    extraBold: 'FunnelSans_800ExtraBold',
   },
   sizes: {
     xs: 12,

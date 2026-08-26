@@ -7,7 +7,8 @@ import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppStore } from '../../store/useAppStore';
-import { User, Mail, Lock, CheckSquare, Square } from 'lucide-react-native';
+import { Mail, Lock, CheckSquare, Square, Fingerprint } from 'lucide-react-native';
+import { Image } from 'react-native';
 
 export default function Login() {
   const router = useRouter();
@@ -28,46 +29,57 @@ export default function Login() {
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <View style={styles.header}>
-          <GlowBorder color={colors.accentIndigo} radius={100} style={styles.avatarContainer}>
-            <View style={styles.avatarInner}>
-              <User size={48} color={colors.accentIndigo} />
-            </View>
-          </GlowBorder>
+          <View style={styles.imageCard}>
+            <Image 
+              source={require('../../../assets/images/bb_alien.png')} 
+              style={styles.avatar} 
+              resizeMode="contain"
+            />
+          </View>
           <View style={styles.badge}>
             <Text style={styles.badgeText}>BEM-VINDO AO JOGO</Text>
           </View>
         </View>
 
         <View style={styles.form}>
-          <View style={styles.inputGroup}>
-            <Mail size={20} color={colors.textSecondary} style={styles.inputIcon} />
-            <TextInput 
-              style={styles.input} 
-              placeholder="seu@cosmos.com" 
-              placeholderTextColor={colors.textSecondary} 
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
+          <View>
+            <Text style={styles.label}>E-MAIL</Text>
+            <View style={styles.inputGroup}>
+              <Mail size={20} color={colors.textSecondary} style={styles.inputIcon} />
+              <TextInput 
+                style={styles.input} 
+                placeholder="seu@cosmos.com" 
+                placeholderTextColor={colors.textSecondary} 
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
           </View>
           
-          <View style={styles.inputGroup}>
-            <Lock size={20} color={colors.textSecondary} style={styles.inputIcon} />
-            <TextInput 
-              style={styles.input} 
-              placeholder="Senha" 
-              placeholderTextColor={colors.textSecondary} 
-              secureTextEntry
-            />
+          <View>
+            <Text style={styles.label}>SENHA</Text>
+            <View style={styles.inputGroup}>
+              <Lock size={20} color={colors.textSecondary} style={styles.inputIcon} />
+              <TextInput 
+                style={styles.input} 
+                placeholder="••••••••" 
+                placeholderTextColor={colors.textSecondary} 
+                secureTextEntry
+              />
+            </View>
           </View>
 
-          <View style={styles.inputGroup}>
-            <User size={20} color={colors.textSecondary} style={styles.inputIcon} />
-            <TextInput 
-              style={styles.input} 
-              placeholder="CPF (Decorativo)" 
-              placeholderTextColor={colors.textSecondary} 
-              keyboardType="number-pad"
-            />
+          <View>
+            <Text style={styles.label}>CPF</Text>
+            <View style={styles.inputGroup}>
+              <Fingerprint size={20} color={colors.textSecondary} style={styles.inputIcon} />
+              <TextInput 
+                style={styles.input} 
+                placeholder="000.000.000-00" 
+                placeholderTextColor={colors.textSecondary} 
+                keyboardType="number-pad"
+              />
+            </View>
           </View>
 
           <TouchableOpacity 
@@ -81,7 +93,7 @@ export default function Login() {
               <Square size={24} color={colors.textSecondary} />
             )}
             <Text style={styles.checkboxText}>
-              Aceito os Termos de Serviço e prometo não chorar se perder.
+              Aceito os <Text style={styles.linkText}>Termos de Serviço</Text> e prometo não chorar se perder.
             </Text>
           </TouchableOpacity>
         </View>
@@ -93,18 +105,6 @@ export default function Login() {
             fullWidth 
             onPress={handleLogin} 
             style={styles.loginButton}
-          />
-          <Button 
-            title="NÃO TENHO CONTA (CADASTRAR)" 
-            variant="ghost" 
-            fullWidth 
-            onPress={() => router.push('/(auth)/cadastro')} 
-          />
-          <Button 
-            title="PULAR →" 
-            variant="ghost" 
-            fullWidth 
-            onPress={handleSkip} 
           />
         </View>
       </View>
@@ -124,31 +124,52 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    marginBottom: 48,
+    marginBottom: 32,
   },
-  avatarContainer: {
-    width: 120,
-    height: 120,
-    marginBottom: 16,
-  },
-  avatarInner: {
-    flex: 1,
-    backgroundColor: colors.bgCard,
-    justifyContent: 'center',
+  imageCard: {
+    width: 200,
+    height: 200,
+    backgroundColor: colors.bgBase,
+    borderRadius: 40,
+    borderWidth: 2,
+    borderColor: colors.accentLime,
     alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: -20, // Overlap with badge
+    shadowColor: colors.accentLime,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 10,
+    overflow: 'hidden',
+  },
+  avatar: {
+    width: '100%',
+    height: '100%',
   },
   badge: {
-    backgroundColor: 'rgba(91, 110, 245, 0.1)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    backgroundColor: colors.accentLime,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
     borderRadius: 100,
-    borderWidth: 1,
-    borderColor: 'rgba(91, 110, 245, 0.3)',
+    zIndex: 10,
+    shadowColor: colors.accentLime,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
+    elevation: 5,
   },
   badgeText: {
-    color: colors.accentIndigo,
+    color: '#000000',
     fontFamily: typography.fonts.bold,
-    fontSize: typography.sizes.xs,
+    fontSize: typography.sizes.sm,
+    letterSpacing: 1,
+  },
+  label: {
+    color: colors.textPrimary,
+    fontFamily: typography.fonts.bold,
+    fontSize: typography.sizes.sm,
+    marginBottom: 8,
     letterSpacing: 1,
   },
   form: {
@@ -158,10 +179,8 @@ const styles = StyleSheet.create({
   inputGroup: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.bgCard,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 16,
+    backgroundColor: '#1A1B23', // Very dark input bg
+    borderRadius: 12,
     height: 56,
     paddingHorizontal: 16,
   },
@@ -186,6 +205,10 @@ const styles = StyleSheet.create({
     fontFamily: typography.fonts.regular,
     fontSize: typography.sizes.sm,
     lineHeight: 20,
+  },
+  linkText: {
+    color: colors.accentLime,
+    textDecorationLine: 'underline',
   },
   footer: {
     gap: 12,

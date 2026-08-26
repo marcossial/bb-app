@@ -7,7 +7,8 @@ import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppStore } from '../../store/useAppStore';
-import { User, Mail, Lock, CheckSquare, Square } from 'lucide-react-native';
+import { Mail, Lock, CheckSquare, Square } from 'lucide-react-native';
+import { Image } from 'react-native';
 
 export default function Cadastro() {
   const router = useRouter();
@@ -28,39 +29,46 @@ export default function Cadastro() {
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <View style={styles.header}>
+          <View style={styles.imageCard}>
+            <Image 
+              source={require('../../../assets/images/bb_alien.png')} 
+              style={styles.avatar} 
+              resizeMode="contain"
+            />
+          </View>
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>BEM-VINDO AO JOGO</Text>
+          </View>
+          <Text style={styles.titleShadow}>CADASTRAR</Text>
           <Text style={styles.title}>CADASTRAR</Text>
-          <Text style={styles.subtitle}>Junte-se a milhares de outros abduzidos.</Text>
         </View>
 
         <View style={styles.form}>
-          <View style={styles.inputGroup}>
-            <User size={20} color={colors.textSecondary} style={styles.inputIcon} />
-            <TextInput 
-              style={styles.input} 
-              placeholder="Nome Completo" 
-              placeholderTextColor={colors.textSecondary} 
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Mail size={20} color={colors.textSecondary} style={styles.inputIcon} />
-            <TextInput 
-              style={styles.input} 
-              placeholder="seu@cosmos.com" 
-              placeholderTextColor={colors.textSecondary} 
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
+          <View>
+            <Text style={styles.label}>E-MAIL</Text>
+            <View style={styles.inputGroup}>
+              <Mail size={20} color={colors.textSecondary} style={styles.inputIcon} />
+              <TextInput 
+                style={styles.input} 
+                placeholder="seu@cosmos.com" 
+                placeholderTextColor={colors.textSecondary} 
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
           </View>
           
-          <View style={styles.inputGroup}>
-            <Lock size={20} color={colors.textSecondary} style={styles.inputIcon} />
-            <TextInput 
-              style={styles.input} 
-              placeholder="Senha" 
-              placeholderTextColor={colors.textSecondary} 
-              secureTextEntry
-            />
+          <View>
+            <Text style={styles.label}>SENHA</Text>
+            <View style={styles.inputGroup}>
+              <Lock size={20} color={colors.textSecondary} style={styles.inputIcon} />
+              <TextInput 
+                style={styles.input} 
+                placeholder="••••••••" 
+                placeholderTextColor={colors.textSecondary} 
+                secureTextEntry
+              />
+            </View>
           </View>
 
           <TouchableOpacity 
@@ -74,7 +82,7 @@ export default function Cadastro() {
               <Square size={24} color={colors.textSecondary} />
             )}
             <Text style={styles.checkboxText}>
-              Eu entendo que este é um aplicativo satírico e que meus dados não estão sendo salvos em nenhum servidor.
+              Aceito os <Text style={styles.linkText}>Termos de Serviço</Text> e prometo não chorar se perder.
             </Text>
           </TouchableOpacity>
         </View>
@@ -87,18 +95,15 @@ export default function Cadastro() {
             onPress={handleCadastro} 
             style={styles.actionButton}
           />
-          <Button 
-            title="JÁ TEM CONTA? LOGAR" 
-            variant="ghost" 
-            fullWidth 
-            onPress={() => router.push('/(auth)/login')} 
-          />
-          <Button 
-            title="PULAR →" 
-            variant="ghost" 
-            fullWidth 
-            onPress={handleSkip} 
-          />
+          <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+            <Text style={styles.skipText}>PULAR →</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.loginLink} onPress={() => router.push('/(auth)/login')}>
+            <Text style={styles.loginText}>
+              Já tem conta? <Text style={styles.linkText}>Logar</Text>
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>
@@ -117,20 +122,69 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    marginBottom: 48,
+    marginBottom: 32,
+  },
+  imageCard: {
+    width: 180,
+    height: 180,
+    backgroundColor: colors.bgBase,
+    borderRadius: 40,
+    borderWidth: 2,
+    borderColor: colors.accentLime,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: -20, // Overlap with badge
+    shadowColor: colors.accentLime,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 10,
+    overflow: 'hidden',
+  },
+  avatar: {
+    width: '100%',
+    height: '100%',
+  },
+  badge: {
+    backgroundColor: colors.accentLime,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 100,
+    zIndex: 10,
+    shadowColor: colors.accentLime,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
+    elevation: 5,
+    marginBottom: 16,
+  },
+  badgeText: {
+    color: '#000000',
+    fontFamily: typography.fonts.bold,
+    fontSize: typography.sizes.sm,
+    letterSpacing: 1,
   },
   title: {
     fontFamily: typography.fonts.condensed,
-    fontSize: typography.sizes.xxxl,
-    color: colors.textPrimary,
-    marginBottom: 8,
+    fontSize: 48,
+    color: colors.accentLime,
     letterSpacing: 2,
+    position: 'absolute',
+    bottom: 0,
   },
-  subtitle: {
-    fontFamily: typography.fonts.regular,
-    fontSize: typography.sizes.md,
-    color: colors.textSecondary,
-    textAlign: 'center',
+  titleShadow: {
+    fontFamily: typography.fonts.condensed,
+    fontSize: 48,
+    color: 'rgba(157, 255, 32, 0.4)',
+    letterSpacing: 2,
+    transform: [{ translateX: -4 }, { translateY: 4 }],
+  },
+  label: {
+    color: colors.textPrimary,
+    fontFamily: typography.fonts.bold,
+    fontSize: typography.sizes.sm,
+    marginBottom: 8,
+    letterSpacing: 1,
   },
   form: {
     gap: 16,
@@ -139,10 +193,8 @@ const styles = StyleSheet.create({
   inputGroup: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.bgCard,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 16,
+    backgroundColor: '#1A1B23', // Very dark input bg
+    borderRadius: 12,
     height: 56,
     paddingHorizontal: 16,
   },
@@ -168,10 +220,34 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.sm,
     lineHeight: 20,
   },
+  linkText: {
+    color: colors.accentLime,
+    textDecorationLine: 'underline',
+  },
   footer: {
-    gap: 12,
+    gap: 16,
+    alignItems: 'center',
   },
   actionButton: {
-    marginBottom: 8,
+    marginBottom: 0,
+  },
+  skipButton: {
+    backgroundColor: '#1A1B23',
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 100,
+  },
+  skipText: {
+    color: colors.textSecondary,
+    fontFamily: typography.fonts.bold,
+    fontSize: typography.sizes.sm,
+  },
+  loginLink: {
+    marginTop: 8,
+  },
+  loginText: {
+    color: colors.textSecondary,
+    fontFamily: typography.fonts.regular,
+    fontSize: typography.sizes.sm,
   }
 });
