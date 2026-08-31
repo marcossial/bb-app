@@ -1,75 +1,222 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { Button } from '../../../../components/ui/Button';
-import { useAppStore } from '../../../../store/useAppStore';
-import { colors } from '../../../../theme/colors';
-import { typography } from '../../../../theme/typography';
-import { Info } from 'lucide-react-native';
-// import { MotiView, MotiText } from 'moti'; // Will use later for full animation
+import { useRouter } from "expo-router";
+import { MotiView } from "moti";
+import { useEffect, useRef, useState } from "react";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Button } from "../../../../components/ui/Button";
+import { useAppStore } from "../../../../store/useAppStore";
+import { colors } from "../../../../theme/colors";
+import { typography } from "../../../../theme/typography";
 
-import { HelpCircle } from 'lucide-react-native';
+import { HelpCircle, Rocket } from "lucide-react-native";
+
+const BET_AMOUNT = 10;
+const TICK_MS = 100;
+const TICK_STEP = 0.05;
+// Normaliza a subida visual do foguete contra um teto de referência
+// (o crash real pode passar disso, o foguete só "sai da tela" antes)
+const VISUAL_CEILING = 4.5;
+
+const FLIGHT_WIDTH = 210;
+const FLIGHT_HEIGHT = 150;
+
+const STARS = [
+  { top: 24, left: 40, size: 3, opacity: 0.5 },
+  { top: 50, left: 140, size: 2, opacity: 0.35 },
+  { top: 90, left: 250, size: 3, opacity: 0.4 },
+  { top: 140, left: 60, size: 2, opacity: 0.3 },
+  { top: 170, left: 200, size: 3, opacity: 0.45 },
+  { top: 30, left: 300, size: 2, opacity: 0.3 },
+];
+
+function formatBRL(value: number) {
+  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
 
 export default function CrashGame() {
   const router = useRouter();
-  const { balance, updateBalance } = useAppStore();
+  const { balance, updateBalance, addXp } = useAppStore();
+
   const [playing, setPlaying] = useState(false);
   const [multiplier, setMultiplier] = useState(1.0);
   const [crashed, setCrashed] = useState(false);
-  
+  const [cashedOut, setCashedOut] = useState(false);
+
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const crashPointRef = useRef(0);
+
+  const flightProgress = useSharedValue(0);
+  const rocketStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: flightProgress.value * FLIGHT_WIDTH },
+      { translateY: -flightProgress.value * FLIGHT_HEIGHT },
+      { rotate: crashed ? "15deg" : "-35deg" },
+    ],
+  }));
+
+  useEffect(() => {
+    const progress = Math.min((multiplier - 1) / (VISUAL_CEILING - 1), 1);
+    flightProgress.value = withTiming(progress, { duration: TICK_MS });
+  }, [multiplier, flightProgress]);
+
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, []);
+
+  const potentialWin = BET_AMOUNT * multiplier;
+
   const startGame = () => {
-    if (balance < 10) {
-      alert("Venda alguns bens para conseguir dinheiro!");
+    if (balance < BET_AMOUNT) {
+      Alert.alert(
+        "Saldo insuficiente",
+        "Venda alguns bens para conseguir dinheiro!",
+      );
       return;
     }
-    updateBalance(-10); // Aposta fictícia
+
+    updateBalance(-BET_AMOUNT);
     setPlaying(true);
     setCrashed(false);
+    setCashedOut(false);
     setMultiplier(1.0);
-    
-    // O ponto de crash é definido ANTES do jogo começar (Dark Pattern)
-    const crashPoint = (Math.random() * 3 + 1).toFixed(2);
-    
+    flightProgress.value = 0;
+
+    // O ponto de crash é definido ANTES do jogo começar (Dark Pattern) —
+    // a barra só parece imprevisível, mas o resultado já estava decidido
+    crashPointRef.current = Number((Math.random() * 3 + 1).toFixed(2));
+
     let current = 1.0;
-    const interval = setInterval(() => {
-      current += 0.05;
-      setMultiplier(Number(current.toFixed(2)));
-      
-      if (current >= Number(crashPoint)) {
-        clearInterval(interval);
+    intervalRef.current = setInterval(() => {
+      current += TICK_STEP;
+      const rounded = Number(current.toFixed(2));
+      setMultiplier(rounded);
+
+      if (rounded >= crashPointRef.current) {
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        intervalRef.current = null;
         setCrashed(true);
         setPlaying(false);
+        addXp(30);
       }
-    }, 100);
+    }, TICK_MS);
+  };
+
+  const cashOut = () => {
+    if (!playing || !intervalRef.current) return;
+    clearInterval(intervalRef.current);
+    intervalRef.current = null;
+    updateBalance(potentialWin);
+    setPlaying(false);
+    setCashedOut(true);
+  };
+
+  const bottomLabel = !playing
+    ? `APOSTAR ${formatBRL(BET_AMOUNT)}`
+    : `RETIRAR ${formatBRL(potentialWin)}`;
+
+  const onPressBottom = () => {
+    if (!playing) startGame();
+    else cashOut();
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>MONEY ABDUCTOR</Text>
-        <TouchableOpacity onPress={() => router.push('/(tabs)/jogar/crash/info')} style={styles.infoIconBtn}>
-          <HelpCircle size={28} color={colors.textSecondary} />
+        <Text style={styles.balanceText}>{formatBRL(balance)}</Text>
+        <TouchableOpacity
+          onPress={() => router.push("/(tabs)/jogar/crash/info")}
+          style={styles.infoIconBtn}
+        >
+          <HelpCircle size={24} color={colors.textSecondary} />
         </TouchableOpacity>
       </View>
-      
-      <View style={styles.gameArea}>
-        <Text style={[
-          styles.multiplier, 
-          crashed && { color: colors.accentDanger }
-        ]}>
-          {multiplier.toFixed(2)}x
-        </Text>
-        {crashed && <Text style={styles.crashedText}>ABDUZIDO!</Text>}
+
+      <View style={styles.hero}>
+        <Text style={styles.eyebrow}>CLASSICS</Text>
+        <Text style={styles.title}>MONEY{"\n"}ABDUCTOR</Text>
+        <View style={styles.divider} />
+        <Text style={styles.subtitle}>ONDE A SORTE ENCONTRA O ABDUZIDO!</Text>
+      </View>
+
+      <View style={styles.simBadge}>
+        <Text style={styles.simBadgeText}>SIMULAÇÃO • SEM DINHEIRO REAL</Text>
+      </View>
+
+      <View style={styles.statsRow}>
+        <View style={styles.statCard}>
+          <Text style={styles.statLabel}>MULTIPLICADOR</Text>
+          <Text style={[styles.statValue, { color: colors.accentLime }]}>
+            {multiplier.toFixed(2)}x
+          </Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statLabel}>VITÓRIA POTENCIAL</Text>
+          <Text style={[styles.statValue, { color: colors.accentIndigo }]}>
+            {formatBRL(potentialWin)}
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.flightCard}>
+        {STARS.map((star, i) => (
+          <View
+            key={i}
+            style={[
+              styles.star,
+              {
+                top: star.top,
+                left: star.left,
+                width: star.size,
+                height: star.size,
+                borderRadius: star.size / 2,
+                opacity: star.opacity,
+              },
+            ]}
+          />
+        ))}
+
+        <MotiView
+          from={{ scale: 1 }}
+          animate={{ scale: playing ? 1.04 : 1 }}
+          transition={{ type: "timing", duration: 400, loop: playing }}
+          style={styles.multiplierWrap}
+        >
+          <Text
+            style={[
+              styles.multiplierText,
+              crashed && { color: colors.accentDanger },
+            ]}
+          >
+            {multiplier.toFixed(2)}x
+          </Text>
+          {crashed && <Text style={styles.crashedText}>ABDUZIDO!</Text>}
+          {cashedOut && <Text style={styles.cashedOutText}>RESGATADO!</Text>}
+        </MotiView>
+
+        <View style={styles.rocketAnchor}>
+          <Animated.View style={rocketStyle}>
+            <Rocket
+              size={30}
+              color={crashed ? colors.accentDanger : colors.accentLime}
+              fill={crashed ? colors.accentDanger : colors.accentLime}
+            />
+          </Animated.View>
+        </View>
       </View>
 
       <View style={styles.controls}>
-        <Button 
-          title={playing ? "JOGANDO..." : "APOSTAR R$ 10"} 
-          variant={playing ? "ghost" : "primary"} 
-          fullWidth 
-          onPress={startGame}
-          disabled={playing}
+        <Button
+          title={bottomLabel}
+          variant="primary"
+          fullWidth
+          onPress={onPressBottom}
         />
       </View>
     </SafeAreaView>
@@ -80,41 +227,153 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.bgBase,
-    padding: 24,
+    paddingHorizontal: 24,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 40,
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    gap: 12,
+    marginTop: 8,
+  },
+  balanceText: {
+    color: colors.textSecondary,
+    fontFamily: typography.fonts.bold,
+    fontSize: typography.sizes.sm,
+  },
+  infoIconBtn: {
+    height: 36,
+    width: 36,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  hero: {
+    alignItems: "center",
+    marginTop: 8,
+  },
+  eyebrow: {
+    color: colors.textSecondary,
+    fontFamily: typography.fonts.bold,
+    fontSize: typography.sizes.xs,
+    letterSpacing: 3,
+    marginBottom: 4,
   },
   title: {
-    color: colors.textPrimary,
+    color: colors.accentLime,
+    fontFamily: typography.fonts.condensed,
+    fontSize: typography.sizes.xxl,
+    lineHeight: typography.sizes.xxl * 1.05,
+    textAlign: "center",
+    textShadowColor: colors.accentLime,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 16,
+  },
+  divider: {
+    width: 40,
+    height: 2,
+    backgroundColor: colors.accentLime,
+    borderRadius: 1,
+    marginTop: 12,
+    marginBottom: 10,
+    opacity: 0.6,
+  },
+  subtitle: {
+    color: colors.accentLime,
+    fontFamily: typography.fonts.bold,
+    fontSize: typography.sizes.xs,
+    letterSpacing: 1,
+    textAlign: "center",
+    textShadowColor: colors.accentLime,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 10,
+  },
+  simBadge: {
+    alignSelf: "center",
+    backgroundColor: "rgba(255,255,255,0.05)",
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    marginTop: 16,
+  },
+  simBadgeText: {
+    color: colors.textSecondary,
+    fontFamily: typography.fonts.regular,
+    fontSize: typography.sizes.xs,
+    letterSpacing: 0.5,
+  },
+  statsRow: {
+    flexDirection: "row",
+    gap: 12,
+    marginTop: 20,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: colors.bgCard,
+    borderRadius: 16,
+    paddingVertical: 14,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.05)",
+  },
+  statLabel: {
+    color: colors.textSecondary,
+    fontFamily: typography.fonts.bold,
+    fontSize: 11,
+    letterSpacing: 1,
+    marginBottom: 4,
+  },
+  statValue: {
     fontFamily: typography.fonts.condensed,
     fontSize: typography.sizes.xl,
   },
-  infoBtn: {
-    height: 40,
-    paddingHorizontal: 12,
-  },
-  gameArea: {
+  flightCard: {
+    marginTop: 20,
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    minHeight: 260,
+    backgroundColor: colors.bgCard,
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.06)",
+    overflow: "hidden",
+    justifyContent: "center",
+    alignItems: "center",
   },
-  multiplier: {
+  star: {
+    position: "absolute",
+    backgroundColor: colors.textPrimary,
+  },
+  multiplierWrap: {
+    alignItems: "center",
+  },
+  multiplierText: {
     color: colors.accentLime,
     fontFamily: typography.fonts.condensed,
-    fontSize: 80,
+    fontSize: 64,
+    textShadowColor: colors.accentLime,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 20,
   },
   crashedText: {
     color: colors.accentDanger,
     fontFamily: typography.fonts.bold,
     fontSize: typography.sizes.lg,
-    marginTop: 16,
+    marginTop: 8,
+    letterSpacing: 1,
+  },
+  cashedOutText: {
+    color: colors.accentLime,
+    fontFamily: typography.fonts.bold,
+    fontSize: typography.sizes.lg,
+    marginTop: 8,
+    letterSpacing: 1,
+  },
+  rocketAnchor: {
+    position: "absolute",
+    left: 28,
+    bottom: 28,
   },
   controls: {
-    marginTop: 'auto',
     paddingBottom: 40,
-  }
+    paddingTop: 24,
+  },
 });

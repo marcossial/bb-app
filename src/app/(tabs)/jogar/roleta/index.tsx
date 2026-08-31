@@ -1,34 +1,141 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { Button } from '../../../../components/ui/Button';
-import { useAppStore } from '../../../../store/useAppStore';
-import { colors } from '../../../../theme/colors';
-import { typography } from '../../../../theme/typography';
+import { useRouter } from "expo-router";
+import { useMemo, useState } from "react";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Svg, { Path } from "react-native-svg";
+import { Button } from "../../../../components/ui/Button";
+import { useAppStore } from "../../../../store/useAppStore";
+import { colors } from "../../../../theme/colors";
+import { typography } from "../../../../theme/typography";
 
-import { HelpCircle } from 'lucide-react-native';
+import { ChevronDown, HelpCircle } from "lucide-react-native";
+
+const BET_AMOUNT = 10;
+const WIN_MULTIPLIER = 14;
+
+const WHEEL_SIZE = 250;
+const DISC_SIZE = 226;
+const HUB_SIZE = 100;
+const SEGMENT_COUNT = 16;
+
+function formatBRL(value: number) {
+  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+// --- Geometria da roda: gera as fatias pretas/brancas alternadas em SVG ---
+function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
+  const angleRad = ((angleDeg - 90) * Math.PI) / 180;
+  return { x: cx + r * Math.cos(angleRad), y: cy + r * Math.sin(angleRad) };
+}
+
+function describeSlice(
+  cx: number,
+  cy: number,
+  r: number,
+  startAngle: number,
+  endAngle: number,
+) {
+  const start = polarToCartesian(cx, cy, r, endAngle);
+  const end = polarToCartesian(cx, cy, r, startAngle);
+  const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+  return [
+    "M",
+    cx,
+    cy,
+    "L",
+    start.x,
+    start.y,
+    "A",
+    r,
+    r,
+    0,
+    largeArcFlag,
+    0,
+    end.x,
+    end.y,
+    "Z",
+  ].join(" ");
+}
+
+function WheelSegments() {
+  const slices = useMemo(() => {
+    const r = DISC_SIZE / 2;
+    const step = 360 / SEGMENT_COUNT;
+    return Array.from({ length: SEGMENT_COUNT }).map((_, i) => ({
+      d: describeSlice(r, r, r, i * step, (i + 1) * step),
+      color: i % 2 === 0 ? "#0A0A0A" : "#F2F2F2",
+    }));
+  }, []);
+
+  return (
+    <Svg
+      width={DISC_SIZE}
+      height={DISC_SIZE}
+      viewBox={`0 0 ${DISC_SIZE} ${DISC_SIZE}`}
+    >
+      {slices.map((slice, i) => (
+        <Path key={i} d={slice.d} fill={slice.color} />
+      ))}
+    </Svg>
+  );
+}
 
 export default function RoletaGame() {
   const router = useRouter();
-  const { balance, updateBalance } = useAppStore();
+  const { balance, updateBalance, addXp } = useAppStore();
   const [playing, setPlaying] = useState(false);
   const [result, setResult] = useState<string | null>(null);
-  
+  const [history, setHistory] = useState<Array<"W" | "L">>([]);
+
+  const rotation = useSharedValue(0);
+  const discSpinStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${rotation.value}deg` }],
+  }));
+
+  const canPlay = !playing && balance >= BET_AMOUNT;
+
   const startGame = () => {
-    if (balance < 10) {
-      alert("Venda alguns bens para conseguir dinheiro!");
+    if (playing) return;
+
+    if (balance < BET_AMOUNT) {
+      Alert.alert(
+        "Saldo insuficiente",
+        "Venda alguns bens para conseguir dinheiro!",
+      );
       return;
     }
-    updateBalance(-10);
+
+    updateBalance(-BET_AMOUNT);
     setPlaying(true);
     setResult(null);
-    
-    // Simulate spin
+
+    // A roda gira várias voltas + um ângulo aleatório, só por estética —
+    // o resultado real já foi decidido pela probabilidade abaixo
+    rotation.value = withTiming(
+      rotation.value + 360 * 4 + Math.random() * 360,
+      {
+        duration: 1500,
+        easing: Easing.out(Easing.cubic),
+      },
+    );
+
     setTimeout(() => {
-      // 90% chance to lose in this satirical roleta
       const win = Math.random() > 0.9;
-      setResult(win ? 'GANHOU (Milagre)' : 'PERDEU (Como sempre)');
+
+      if (win) {
+        updateBalance(BET_AMOUNT * WIN_MULTIPLIER);
+      } else {
+        addXp(30);
+      }
+
+      setResult(win ? "GANHOU (Milagre)" : "PERDEU (Como sempre)");
+      setHistory((prev) => [win ? "W" : "L", ...prev].slice(0, 8));
       setPlaying(false);
     }, 1500);
   };
@@ -36,34 +143,104 @@ export default function RoletaGame() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>BRAZILIAN ROULETTE</Text>
-        <TouchableOpacity onPress={() => router.push('/(tabs)/jogar/roleta/info')} style={styles.infoIconBtn}>
-          <HelpCircle size={28} color={colors.textSecondary} />
+        <Text style={styles.balanceText}>{formatBRL(balance)}</Text>
+        <TouchableOpacity
+          onPress={() => router.push("/(tabs)/jogar/roleta/info")}
+          style={styles.infoIconBtn}
+        >
+          <HelpCircle size={24} color={colors.textSecondary} />
         </TouchableOpacity>
       </View>
-      
-      <View style={styles.gameArea}>
-        <View style={styles.wheel}>
-          {playing ? (
-            <Text style={styles.wheelText}>GIRANDO...</Text>
-          ) : result ? (
-            <Text style={[
-              styles.wheelText, 
-              { color: result.includes('PERDEU') ? colors.accentDanger : colors.accentLime, fontSize: 24, textAlign: 'center' }
-            ]}>{result}</Text>
-          ) : (
-            <Text style={styles.wheelText}>14X</Text>
-          )}
-        </View>
+
+      <View style={styles.hero}>
+        <Text style={styles.eyebrow}>CLASSICS</Text>
+        <Text style={styles.title}>BRAZILIAN{"\n"}ROULETTE</Text>
+        <View style={styles.divider} />
+        <Text style={styles.subtitle}>6/6 CHANCE DE SE DAR MAL</Text>
       </View>
 
+      <View style={styles.simBadge}>
+        <Text style={styles.simBadgeText}>SIMULAÇÃO • SEM DINHEIRO REAL</Text>
+      </View>
+
+      <View style={styles.wheelCard}>
+        <View style={styles.wheel}>
+          <Animated.View style={[styles.disc, discSpinStyle]}>
+            <WheelSegments />
+          </Animated.View>
+
+          <View style={styles.pointer} />
+
+          <View style={styles.hub}>
+            {playing ? (
+              <Text style={styles.hubTextSmall}>GIRANDO...</Text>
+            ) : result ? (
+              <Text
+                style={[
+                  styles.hubTextSmall,
+                  {
+                    color: result.includes("PERDEU")
+                      ? colors.accentDanger
+                      : colors.accentLime,
+                  },
+                ]}
+              >
+                {result}
+              </Text>
+            ) : (
+              <Text style={styles.hubText}>{WIN_MULTIPLIER}X</Text>
+            )}
+          </View>
+        </View>
+
+        {history.length > 0 && (
+          <View style={styles.historyRow}>
+            {history.map((r, i) => (
+              <View
+                key={i}
+                style={[
+                  styles.historyDot,
+                  {
+                    backgroundColor:
+                      r === "W" ? colors.accentLime : colors.accentDanger,
+                  },
+                ]}
+              />
+            ))}
+          </View>
+        )}
+      </View>
+
+      <TouchableOpacity
+        style={styles.modeSelector}
+        activeOpacity={0.7}
+        onPress={() =>
+          Alert.alert(
+            "Em breve",
+            "Outros modos de aposta chegam em uma próxima atualização.",
+          )
+        }
+      >
+        <Text style={styles.modeLabel}>Modo</Text>
+        <View style={styles.modeValueRow}>
+          <Text style={styles.modeValue}>Clássico</Text>
+          <ChevronDown size={18} color={colors.textSecondary} />
+        </View>
+      </TouchableOpacity>
+
       <View style={styles.controls}>
-        <Button 
-          title={playing ? "GIRANDO A RODA..." : "APOSTAR R$ 10"} 
-          variant={playing ? "ghost" : "primary"} 
-          fullWidth 
+        <Button
+          title={
+            playing
+              ? "GIRANDO A RODA..."
+              : !canPlay
+                ? "SEM SALDO"
+                : `APOSTAR ${formatBRL(BET_AMOUNT)}`
+          }
+          variant={playing || !canPlay ? "ghost" : "primary"}
+          fullWidth
           onPress={startGame}
-          disabled={playing}
+          disabled={!canPlay}
         />
       </View>
     </SafeAreaView>
@@ -74,45 +251,197 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.bgBase,
-    padding: 24,
+    paddingHorizontal: 24,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 40,
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    gap: 12,
+    marginTop: 8,
+  },
+  balanceText: {
+    color: colors.textSecondary,
+    fontFamily: typography.fonts.bold,
+    fontSize: typography.sizes.sm,
+  },
+  infoIconBtn: {
+    height: 36,
+    width: 36,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  hero: {
+    alignItems: "center",
+    marginTop: 8,
+  },
+  eyebrow: {
+    color: colors.textSecondary,
+    fontFamily: typography.fonts.bold,
+    fontSize: typography.sizes.xs,
+    letterSpacing: 3,
+    marginBottom: 4,
   },
   title: {
-    color: colors.textPrimary,
+    color: colors.accentLime,
     fontFamily: typography.fonts.condensed,
-    fontSize: typography.sizes.lg,
+    fontSize: typography.sizes.xxl,
+    lineHeight: typography.sizes.xxl * 1.05,
+    textAlign: "center",
+    textShadowColor: colors.accentLime,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 16,
   },
-  infoBtn: {
-    height: 40,
-    paddingHorizontal: 12,
+  divider: {
+    width: 40,
+    height: 2,
+    backgroundColor: colors.accentLime,
+    borderRadius: 1,
+    marginTop: 12,
+    marginBottom: 10,
+    opacity: 0.6,
   },
-  gameArea: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  subtitle: {
+    color: colors.accentLime,
+    fontFamily: typography.fonts.bold,
+    fontSize: typography.sizes.xs,
+    letterSpacing: 1,
+    textShadowColor: colors.accentLime,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 10,
+  },
+  simBadge: {
+    alignSelf: "center",
+    backgroundColor: "rgba(255,255,255,0.05)",
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    marginTop: 16,
+  },
+  simBadgeText: {
+    color: colors.textSecondary,
+    fontFamily: typography.fonts.regular,
+    fontSize: typography.sizes.xs,
+    letterSpacing: 0.5,
+  },
+  wheelCard: {
+    marginTop: 20,
+    backgroundColor: colors.bgCard,
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.06)",
+    paddingVertical: 28,
+    alignItems: "center",
   },
   wheel: {
-    width: 250,
-    height: 250,
-    borderRadius: 125,
-    borderWidth: 8,
-    borderColor: colors.accentIndigo,
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: WHEEL_SIZE,
+    height: WHEEL_SIZE,
+    borderRadius: WHEEL_SIZE / 2,
+    borderWidth: 6,
+    borderColor: colors.accentLime,
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: colors.bgCard,
+    shadowColor: colors.accentLime,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 18,
+    elevation: 14,
   },
-  wheelText: {
+  disc: {
+    width: DISC_SIZE,
+    height: DISC_SIZE,
+    borderRadius: DISC_SIZE / 2,
+    overflow: "hidden",
+  },
+  pointer: {
+    position: "absolute",
+    top: -12,
+    left: "50%",
+    marginLeft: -13,
+    width: 0,
+    height: 0,
+    borderLeftWidth: 13,
+    borderRightWidth: 13,
+    borderTopWidth: 22,
+    borderLeftColor: "transparent",
+    borderRightColor: "transparent",
+    borderTopColor: colors.accentIndigo,
+    shadowColor: colors.accentIndigo,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.9,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  hub: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    marginTop: -HUB_SIZE / 2,
+    marginLeft: -HUB_SIZE / 2,
+    width: HUB_SIZE,
+    height: HUB_SIZE,
+    borderRadius: HUB_SIZE / 2,
+    borderWidth: 3,
+    borderColor: colors.accentLime,
+    backgroundColor: colors.bgCard,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  hubText: {
+    color: colors.accentLime,
+    fontFamily: typography.fonts.condensed,
+    fontSize: 30,
+    textShadowColor: colors.accentLime,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 12,
+  },
+  hubTextSmall: {
     color: colors.textPrimary,
     fontFamily: typography.fonts.condensed,
-    fontSize: 48,
+    fontSize: 13,
+    textAlign: "center",
+    paddingHorizontal: 6,
+  },
+  historyRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 24,
+  },
+  historyDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  modeSelector: {
+    marginTop: 20,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  modeLabel: {
+    color: colors.textSecondary,
+    fontFamily: typography.fonts.regular,
+    fontSize: typography.sizes.sm,
+  },
+  modeValueRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  modeValue: {
+    color: colors.textPrimary,
+    fontFamily: typography.fonts.bold,
+    fontSize: typography.sizes.sm,
   },
   controls: {
-    marginTop: 'auto',
+    marginTop: "auto",
     paddingBottom: 40,
-  }
+    paddingTop: 24,
+  },
 });

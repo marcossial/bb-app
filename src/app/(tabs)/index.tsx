@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import {
   Activity,
   Box,
@@ -6,20 +7,30 @@ import {
   Home as HomeIcon,
   UserRound,
 } from "lucide-react-native";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "../../components/ui/Button";
-import { useAppStore } from "../../store/useAppStore";
+import { useAppStore, XP_PER_LEVEL } from "../../store/useAppStore";
 import { colors } from "../../theme/colors";
 import { typography } from "../../theme/typography";
 
 export default function Home() {
-  const { balance, sadnessLevel, luckyDays, assets, sellAsset } = useAppStore();
+  const { balance, sadnessLevel, xp, luckyDays, assets, sellAsset } =
+    useAppStore();
+  const router = useRouter();
 
   const formattedBalance = balance.toLocaleString("pt-BR", {
     style: "currency",
     currency: "BRL",
   });
+
+  const progressPercent = (xp % XP_PER_LEVEL) / (XP_PER_LEVEL / 100);
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -27,9 +38,13 @@ export default function Home() {
         {/* Header - Bigger Bet */}
         <View style={styles.appHeader}>
           <View style={styles.logoContainer}>
-            <View style={styles.alienIconBadge}>
+            <TouchableOpacity
+              style={styles.alienIconBadge}
+              onPress={() => router.push("/profile")}
+              activeOpacity={0.7}
+            >
               <UserRound size={24} color={colors.accentLime} />
-            </View>
+            </TouchableOpacity>
             <Text style={styles.logoText}>BIGGER BET</Text>
           </View>
           <View style={styles.smallAlienBadge}>
@@ -86,13 +101,13 @@ export default function Home() {
               >
                 {sadnessLevel}
               </Text>
-              <Text style={styles.statCardUnit}>XP</Text>
+              <Text style={styles.statCardUnit}>NÍVEL</Text>
             </View>
             <View style={styles.progressBarBg}>
               <View
                 style={[
                   styles.progressBarFill,
-                  { width: `${Math.min(sadnessLevel, 100)}%` },
+                  { width: `${progressPercent}%` },
                 ]}
               />
             </View>

@@ -34,7 +34,7 @@ export default function OnboardingStep3() {
           title="CONTINUAR" 
           variant="primary" 
           fullWidth 
-          onPress={() => router.push('/(auth)/login')} 
+          onPress={() => router.push('/onboarding/terms')} 
         />
       </View>
     </SafeAreaView>
