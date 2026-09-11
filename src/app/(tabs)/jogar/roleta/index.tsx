@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, StyleSheet, Text, TouchableOpacity, View, TextInput } from "react-native";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -18,9 +18,9 @@ import { ChevronDown, HelpCircle, Minus, Plus } from "lucide-react-native";
 
 const WIN_MULTIPLIER = 14;
 
-const WHEEL_SIZE = 250;
-const DISC_SIZE = 226;
-const HUB_SIZE = 100;
+const WHEEL_SIZE = 210;
+const DISC_SIZE = 190;
+const HUB_SIZE = 80;
 const SEGMENT_COUNT = 16;
 
 function formatBRL(value: number) {
@@ -143,7 +143,7 @@ export default function RoletaGame() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.balanceText}>{formatBRL(balance)}</Text>
+          <Text style={styles.balanceText}>{formatBRL(balance)}</Text>
         <TouchableOpacity
           onPress={() => router.push("/(tabs)/jogar/roleta/info")}
           style={styles.infoIconBtn}
@@ -239,9 +239,21 @@ export default function RoletaGame() {
           </TouchableOpacity>
           <View style={styles.betAmountContainer}>
             <Text style={styles.betLabel}>APOSTA</Text>
-            <Text style={[styles.betValue, playing && { color: colors.textSecondary }]}>
-              {formatBRL(betAmount)}
-            </Text>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text style={[styles.betValue, playing && { color: colors.textSecondary }, { marginRight: 4 }]}>
+                R$
+              </Text>
+              <TextInput
+                style={[styles.betValue, playing && { color: colors.textSecondary }, { padding: 0, minWidth: 40, textAlign: "center" }]}
+                keyboardType="numeric"
+                value={betAmount.toString()}
+                onChangeText={(text) => {
+                  const parsed = parseInt(text.replace(/[^0-9]/g, ""), 10);
+                  setBetAmount(isNaN(parsed) ? 0 : parsed);
+                }}
+                editable={!playing}
+              />
+            </View>
           </View>
           <TouchableOpacity
             style={styles.betBtn}
@@ -274,7 +286,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.bgBase,
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
   },
   header: {
     flexDirection: "row",
@@ -296,7 +308,7 @@ const styles = StyleSheet.create({
   },
   hero: {
     alignItems: "center",
-    marginTop: 8,
+    marginTop: 4,
   },
   eyebrow: {
     color: colors.textSecondary,
@@ -339,7 +351,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 10,
     borderRadius: 8,
-    marginTop: 16,
+    marginTop: 8,
   },
   simBadgeText: {
     color: colors.textSecondary,
@@ -348,12 +360,12 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   wheelCard: {
-    marginTop: 20,
+    marginTop: 10,
     backgroundColor: colors.bgCard,
     borderRadius: 28,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.06)",
-    paddingVertical: 28,
+    paddingVertical: 16,
     alignItems: "center",
   },
   wheel: {
@@ -414,7 +426,7 @@ const styles = StyleSheet.create({
   hubText: {
     color: colors.accentLime,
     fontFamily: typography.fonts.condensed,
-    fontSize: 30,
+    fontSize: 24,
     textShadowColor: colors.accentLime,
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 12,
@@ -429,7 +441,7 @@ const styles = StyleSheet.create({
   historyRow: {
     flexDirection: "row",
     gap: 8,
-    marginTop: 24,
+    marginTop: 12,
   },
   historyDot: {
     width: 10,
@@ -437,11 +449,11 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   modeSelector: {
-    marginTop: 20,
+    marginTop: 10,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.08)",
     borderRadius: 16,
-    paddingVertical: 14,
+    paddingVertical: 10,
     paddingHorizontal: 16,
     flexDirection: "row",
     justifyContent: "space-between",
@@ -464,8 +476,8 @@ const styles = StyleSheet.create({
   },
   controls: {
     marginTop: "auto",
-    paddingBottom: 40,
-    paddingTop: 24,
+    paddingBottom: 16,
+    paddingTop: 12,
   },
   betRow: {
     flexDirection: "row",
@@ -474,7 +486,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bgCard,
     borderRadius: 16,
     padding: 8,
-    marginBottom: 16,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.05)",
   },

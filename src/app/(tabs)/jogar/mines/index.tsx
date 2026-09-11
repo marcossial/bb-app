@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, StyleSheet, Text, TouchableOpacity, View, TextInput } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -19,8 +19,8 @@ const MULTIPLIER_PER_SAFE = 1.5;
 const GRID_COLUMNS = 5;
 const GRID_ROWS = 4;
 const TOTAL_CELLS = GRID_COLUMNS * GRID_ROWS;
-const CELL_SIZE = 52;
-const CELL_GAP = 10;
+const CELL_SIZE = 42;
+const CELL_GAP = 8;
 
 type CellState = "hidden" | "safe" | "mine";
 
@@ -151,7 +151,7 @@ export default function MinesGame() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.balanceText}>{formatBRL(balance)}</Text>
+          <Text style={styles.balanceText}>{formatBRL(balance)}</Text>
         <TouchableOpacity
           onPress={() => router.push("/(tabs)/jogar/mines/info")}
           style={styles.infoIconBtn}
@@ -235,9 +235,21 @@ export default function MinesGame() {
           </TouchableOpacity>
           <View style={styles.betAmountContainer}>
             <Text style={styles.betLabel}>APOSTA</Text>
-            <Text style={[styles.betValue, playing && { color: colors.textSecondary }]}>
-              {formatBRL(betAmount)}
-            </Text>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text style={[styles.betValue, playing && { color: colors.textSecondary }, { marginRight: 4 }]}>
+                R$
+              </Text>
+              <TextInput
+                style={[styles.betValue, playing && { color: colors.textSecondary }, { padding: 0, minWidth: 40, textAlign: "center" }]}
+                keyboardType="numeric"
+                value={betAmount.toString()}
+                onChangeText={(text) => {
+                  const parsed = parseInt(text.replace(/[^0-9]/g, ""), 10);
+                  setBetAmount(isNaN(parsed) ? 0 : parsed);
+                }}
+                editable={!playing}
+              />
+            </View>
           </View>
           <TouchableOpacity
             style={styles.betBtn}
@@ -264,7 +276,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.bgBase,
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
   },
   header: {
     flexDirection: "row",
@@ -286,7 +298,7 @@ const styles = StyleSheet.create({
   },
   hero: {
     alignItems: "center",
-    marginTop: 8,
+    marginTop: 4,
   },
   eyebrow: {
     color: colors.textSecondary,
@@ -329,7 +341,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 10,
     borderRadius: 8,
-    marginTop: 16,
+    marginTop: 8,
   },
   simBadgeText: {
     color: colors.textSecondary,
@@ -340,13 +352,13 @@ const styles = StyleSheet.create({
   statsRow: {
     flexDirection: "row",
     gap: 12,
-    marginTop: 20,
+    marginTop: 12,
   },
   statCard: {
     flex: 1,
     backgroundColor: colors.bgCard,
     borderRadius: 16,
-    paddingVertical: 14,
+    paddingVertical: 10,
     alignItems: "center",
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.05)",
@@ -363,12 +375,12 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.xl,
   },
   gridCard: {
-    marginTop: 20,
+    marginTop: 12,
     backgroundColor: colors.bgCard,
     borderRadius: 28,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.06)",
-    paddingVertical: 24,
+    paddingVertical: 16,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -432,8 +444,8 @@ const styles = StyleSheet.create({
   },
   controls: {
     marginTop: "auto",
-    paddingBottom: 40,
-    paddingTop: 24,
+    paddingBottom: 16,
+    paddingTop: 12,
   },
   betRow: {
     flexDirection: "row",
@@ -442,7 +454,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bgCard,
     borderRadius: 16,
     padding: 8,
-    marginBottom: 16,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.05)",
   },

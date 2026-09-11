@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import { MotiView } from "moti";
 import { useEffect, useRef, useState } from "react";
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, StyleSheet, Text, TouchableOpacity, View, TextInput } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -22,7 +22,7 @@ const TICK_STEP = 0.05;
 const VISUAL_CEILING = 4.5;
 
 const FLIGHT_WIDTH = 210;
-const FLIGHT_HEIGHT = 150;
+const FLIGHT_HEIGHT = 110;
 
 const STARS = [
   { top: 24, left: 40, size: 3, opacity: 0.5 },
@@ -129,7 +129,7 @@ export default function CrashGame() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.balanceText}>{formatBRL(balance)}</Text>
+          <Text style={styles.balanceText}>{formatBRL(balance)}</Text>
         <TouchableOpacity
           onPress={() => router.push("/(tabs)/jogar/crash/info")}
           style={styles.infoIconBtn}
@@ -222,9 +222,21 @@ export default function CrashGame() {
           </TouchableOpacity>
           <View style={styles.betAmountContainer}>
             <Text style={styles.betLabel}>APOSTA</Text>
-            <Text style={[styles.betValue, playing && { color: colors.textSecondary }]}>
-              {formatBRL(betAmount)}
-            </Text>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text style={[styles.betValue, playing && { color: colors.textSecondary }, { marginRight: 4 }]}>
+                R$
+              </Text>
+              <TextInput
+                style={[styles.betValue, playing && { color: colors.textSecondary }, { padding: 0, minWidth: 40, textAlign: "center" }]}
+                keyboardType="numeric"
+                value={betAmount.toString()}
+                onChangeText={(text) => {
+                  const parsed = parseInt(text.replace(/[^0-9]/g, ""), 10);
+                  setBetAmount(isNaN(parsed) ? 0 : parsed);
+                }}
+                editable={!playing}
+              />
+            </View>
           </View>
           <TouchableOpacity
             style={styles.betBtn}
@@ -250,7 +262,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.bgBase,
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
   },
   header: {
     flexDirection: "row",
@@ -272,7 +284,7 @@ const styles = StyleSheet.create({
   },
   hero: {
     alignItems: "center",
-    marginTop: 8,
+    marginTop: 4,
   },
   eyebrow: {
     color: colors.textSecondary,
@@ -316,7 +328,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 10,
     borderRadius: 8,
-    marginTop: 16,
+    marginTop: 8,
   },
   simBadgeText: {
     color: colors.textSecondary,
@@ -327,13 +339,13 @@ const styles = StyleSheet.create({
   statsRow: {
     flexDirection: "row",
     gap: 12,
-    marginTop: 20,
+    marginTop: 12,
   },
   statCard: {
     flex: 1,
     backgroundColor: colors.bgCard,
     borderRadius: 16,
-    paddingVertical: 14,
+    paddingVertical: 10,
     alignItems: "center",
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.05)",
@@ -350,9 +362,9 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.xl,
   },
   flightCard: {
-    marginTop: 20,
+    marginTop: 12,
     flex: 1,
-    minHeight: 260,
+    minHeight: 180,
     backgroundColor: colors.bgCard,
     borderRadius: 28,
     borderWidth: 1,
@@ -371,7 +383,7 @@ const styles = StyleSheet.create({
   multiplierText: {
     color: colors.accentLime,
     fontFamily: typography.fonts.condensed,
-    fontSize: 64,
+    fontSize: 52,
     textShadowColor: colors.accentLime,
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 20,
@@ -380,24 +392,24 @@ const styles = StyleSheet.create({
     color: colors.accentDanger,
     fontFamily: typography.fonts.bold,
     fontSize: typography.sizes.lg,
-    marginTop: 8,
+    marginTop: 4,
     letterSpacing: 1,
   },
   cashedOutText: {
     color: colors.accentLime,
     fontFamily: typography.fonts.bold,
     fontSize: typography.sizes.lg,
-    marginTop: 8,
+    marginTop: 4,
     letterSpacing: 1,
   },
   rocketAnchor: {
     position: "absolute",
-    left: 28,
-    bottom: 28,
+    left: 16,
+    bottom: 16,
   },
   controls: {
-    paddingBottom: 40,
-    paddingTop: 24,
+    paddingBottom: 16,
+    paddingTop: 12,
   },
   betRow: {
     flexDirection: "row",
@@ -406,7 +418,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bgCard,
     borderRadius: 16,
     padding: 8,
-    marginBottom: 16,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.05)",
   },
