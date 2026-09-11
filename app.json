@@ -19,7 +19,10 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.marcossial.biggerbetapp"
+      "package": "com.marcossial.biggerbetapp",
+      "navigationBar": {
+        "visible": "immersive"
+      }
     },
     "web": {
       "output": "static",
