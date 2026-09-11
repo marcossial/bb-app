@@ -13,9 +13,8 @@ import { useAppStore } from "../../../../store/useAppStore";
 import { colors } from "../../../../theme/colors";
 import { typography } from "../../../../theme/typography";
 
-import { Bomb, HelpCircle, Star } from "lucide-react-native";
+import { Bomb, HelpCircle, Star, Minus, Plus } from "lucide-react-native";
 
-const BET_AMOUNT = 10;
 const MULTIPLIER_PER_SAFE = 1.5;
 const GRID_COLUMNS = 5;
 const GRID_ROWS = 4;
@@ -68,6 +67,7 @@ export default function MinesGame() {
   const router = useRouter();
   const { balance, updateBalance, addXp } = useAppStore();
 
+  const [betAmount, setBetAmount] = useState(10);
   const [playing, setPlaying] = useState(false);
   const [exploded, setExploded] = useState(false);
   const [cellStates, setCellStates] = useState<CellState[]>(
@@ -87,17 +87,17 @@ export default function MinesGame() {
   }, [exploded, kaboomScale]);
 
   const multiplier = 1 + revealedSafeCount * MULTIPLIER_PER_SAFE;
-  const potentialWin = BET_AMOUNT * multiplier;
+  const potentialWin = betAmount * multiplier;
 
   const startGame = () => {
-    if (balance < BET_AMOUNT) {
+    if (balance < betAmount) {
       Alert.alert(
         "Saldo insuficiente",
         "Venda alguns bens para conseguir dinheiro!",
       );
       return;
     }
-    updateBalance(-BET_AMOUNT);
+    updateBalance(-betAmount);
     setCellStates(Array(TOTAL_CELLS).fill("hidden"));
     setRevealedSafeCount(0);
     setExploded(false);
@@ -131,7 +131,7 @@ export default function MinesGame() {
   };
 
   const bottomLabel = !playing
-    ? `APOSTAR ${formatBRL(BET_AMOUNT)}`
+    ? `APOSTAR ${formatBRL(betAmount)}`
     : revealedSafeCount > 0
       ? `RETIRAR ${formatBRL(potentialWin)}`
       : "ESCOLHA UMA CÉLULA";
@@ -225,6 +225,29 @@ export default function MinesGame() {
       </View>
 
       <View style={styles.controls}>
+        <View style={styles.betRow}>
+          <TouchableOpacity
+            style={styles.betBtn}
+            onPress={() => setBetAmount(Math.max(1, betAmount - 10))}
+            disabled={playing}
+          >
+            <Minus size={20} color={playing ? colors.textSecondary : colors.textPrimary} />
+          </TouchableOpacity>
+          <View style={styles.betAmountContainer}>
+            <Text style={styles.betLabel}>APOSTA</Text>
+            <Text style={[styles.betValue, playing && { color: colors.textSecondary }]}>
+              {formatBRL(betAmount)}
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={styles.betBtn}
+            onPress={() => setBetAmount(betAmount + 10)}
+            disabled={playing}
+          >
+            <Plus size={20} color={playing ? colors.textSecondary : colors.textPrimary} />
+          </TouchableOpacity>
+        </View>
+
         <Button
           title={bottomLabel}
           variant={bottomVariant}
@@ -411,5 +434,39 @@ const styles = StyleSheet.create({
     marginTop: "auto",
     paddingBottom: 40,
     paddingTop: 24,
+  },
+  betRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: colors.bgCard,
+    borderRadius: 16,
+    padding: 8,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.05)",
+  },
+  betBtn: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  betAmountContainer: {
+    alignItems: "center",
+  },
+  betLabel: {
+    color: colors.textSecondary,
+    fontFamily: typography.fonts.bold,
+    fontSize: 10,
+    letterSpacing: 1,
+    marginBottom: 2,
+  },
+  betValue: {
+    color: colors.textPrimary,
+    fontFamily: typography.fonts.condensed,
+    fontSize: typography.sizes.xl,
   },
 });

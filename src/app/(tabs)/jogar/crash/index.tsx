@@ -13,9 +13,8 @@ import { useAppStore } from "../../../../store/useAppStore";
 import { colors } from "../../../../theme/colors";
 import { typography } from "../../../../theme/typography";
 
-import { HelpCircle, Rocket } from "lucide-react-native";
+import { HelpCircle, Rocket, Minus, Plus } from "lucide-react-native";
 
-const BET_AMOUNT = 10;
 const TICK_MS = 100;
 const TICK_STEP = 0.05;
 // Normaliza a subida visual do foguete contra um teto de referência
@@ -42,6 +41,7 @@ export default function CrashGame() {
   const router = useRouter();
   const { balance, updateBalance, addXp } = useAppStore();
 
+  const [betAmount, setBetAmount] = useState(10);
   const [playing, setPlaying] = useState(false);
   const [multiplier, setMultiplier] = useState(1.0);
   const [crashed, setCrashed] = useState(false);
@@ -70,10 +70,10 @@ export default function CrashGame() {
     };
   }, []);
 
-  const potentialWin = BET_AMOUNT * multiplier;
+  const potentialWin = betAmount * multiplier;
 
   const startGame = () => {
-    if (balance < BET_AMOUNT) {
+    if (balance < betAmount) {
       Alert.alert(
         "Saldo insuficiente",
         "Venda alguns bens para conseguir dinheiro!",
@@ -81,7 +81,7 @@ export default function CrashGame() {
       return;
     }
 
-    updateBalance(-BET_AMOUNT);
+    updateBalance(-betAmount);
     setPlaying(true);
     setCrashed(false);
     setCashedOut(false);
@@ -118,7 +118,7 @@ export default function CrashGame() {
   };
 
   const bottomLabel = !playing
-    ? `APOSTAR ${formatBRL(BET_AMOUNT)}`
+    ? `APOSTAR ${formatBRL(betAmount)}`
     : `RETIRAR ${formatBRL(potentialWin)}`;
 
   const onPressBottom = () => {
@@ -212,6 +212,29 @@ export default function CrashGame() {
       </View>
 
       <View style={styles.controls}>
+        <View style={styles.betRow}>
+          <TouchableOpacity
+            style={styles.betBtn}
+            onPress={() => setBetAmount(Math.max(1, betAmount - 10))}
+            disabled={playing}
+          >
+            <Minus size={20} color={playing ? colors.textSecondary : colors.textPrimary} />
+          </TouchableOpacity>
+          <View style={styles.betAmountContainer}>
+            <Text style={styles.betLabel}>APOSTA</Text>
+            <Text style={[styles.betValue, playing && { color: colors.textSecondary }]}>
+              {formatBRL(betAmount)}
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={styles.betBtn}
+            onPress={() => setBetAmount(betAmount + 10)}
+            disabled={playing}
+          >
+            <Plus size={20} color={playing ? colors.textSecondary : colors.textPrimary} />
+          </TouchableOpacity>
+        </View>
+
         <Button
           title={bottomLabel}
           variant="primary"
@@ -375,5 +398,39 @@ const styles = StyleSheet.create({
   controls: {
     paddingBottom: 40,
     paddingTop: 24,
+  },
+  betRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: colors.bgCard,
+    borderRadius: 16,
+    padding: 8,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.05)",
+  },
+  betBtn: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  betAmountContainer: {
+    alignItems: "center",
+  },
+  betLabel: {
+    color: colors.textSecondary,
+    fontFamily: typography.fonts.bold,
+    fontSize: 10,
+    letterSpacing: 1,
+    marginBottom: 2,
+  },
+  betValue: {
+    color: colors.textPrimary,
+    fontFamily: typography.fonts.condensed,
+    fontSize: typography.sizes.xl,
   },
 });
