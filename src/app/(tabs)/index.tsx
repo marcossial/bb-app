@@ -7,13 +7,21 @@ import {
   Home as HomeIcon,
   UserRound,
 } from "lucide-react-native";
+import { MotiView } from "moti";
+import { useEffect } from "react";
 import {
+  Image,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "../../components/ui/Button";
 import { useAppStore, XP_PER_LEVEL } from "../../store/useAppStore";
@@ -32,37 +40,68 @@ export default function Home() {
 
   const progressPercent = (xp % XP_PER_LEVEL) / (XP_PER_LEVEL / 100);
 
+  const progressWidth = useSharedValue(0);
+  useEffect(() => {
+    progressWidth.value = withTiming(progressPercent, { duration: 800 });
+  }, [progressPercent, progressWidth]);
+  const progressBarAnimatedStyle = useAnimatedStyle(() => ({
+    width: `${progressWidth.value}%`,
+  }));
+
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Header - Bigger Bet */}
-        <View style={styles.appHeader}>
+        <MotiView
+          from={{ opacity: 0, translateY: -8 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: "timing", duration: 400 }}
+          style={styles.appHeader}
+        >
           <View style={styles.logoContainer}>
             <TouchableOpacity
-              style={styles.alienIconBadge}
+              style={styles.profileButton}
               onPress={() => router.push("/profile")}
               activeOpacity={0.7}
             >
               <UserRound size={24} color={colors.accentLime} />
             </TouchableOpacity>
-            <Text style={styles.logoText}>BIGGER BET</Text>
-          </View>
-          <View style={styles.smallAlienBadge}>
-            <UserRound size={16} color={colors.textSecondary} />
+            <Image
+              source={require("../../../assets/images/biggerbet_logo.png")}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
           </View>
           <View style={styles.headerNeonBorder} />
-        </View>
+        </MotiView>
 
         {/* Header - Balance */}
-        <View style={styles.balanceSection}>
+        <MotiView
+          from={{ opacity: 0, translateY: 12 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: "timing", duration: 450, delay: 100 }}
+          style={styles.balanceSection}
+        >
           <Text style={styles.balanceLabel}>SALDO ATUAL DE DESESPERO</Text>
-          <Text style={styles.balanceValue}>{formattedBalance}</Text>
+
+          <MotiView
+            from={{ scale: 1 }}
+            animate={{ scale: 1.03 }}
+            transition={{ type: "timing", duration: 1400, loop: true }}
+          >
+            <Text style={styles.balanceValue}>{formattedBalance}</Text>
+          </MotiView>
 
           <View style={styles.riskBadge}>
-            <View style={styles.riskDot} />
+            <MotiView
+              from={{ opacity: 1 }}
+              animate={{ opacity: 0.3 }}
+              transition={{ type: "timing", duration: 700, loop: true }}
+              style={styles.riskDot}
+            />
             <Text style={styles.riskText}>RISCO DE FALÊNCIA: CRÍTICO</Text>
           </View>
-        </View>
+        </MotiView>
 
         {/* Stats */}
         <View style={styles.sectionHeader}>
@@ -71,7 +110,10 @@ export default function Home() {
         </View>
 
         <View style={styles.statsRow}>
-          <View
+          <MotiView
+            from={{ opacity: 0, translateY: 16 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: "timing", duration: 400, delay: 150 }}
             style={[styles.statCard, { borderColor: "rgba(67, 85, 249, 0.2)" }]}
           >
             <View style={styles.statIconContainer}>
@@ -83,9 +125,12 @@ export default function Home() {
             >
               {luckyDays}
             </Text>
-          </View>
+          </MotiView>
 
-          <View
+          <MotiView
+            from={{ opacity: 0, translateY: 16 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: "timing", duration: 400, delay: 250 }}
             style={[
               styles.statCard,
               { borderColor: "rgba(157, 255, 32, 0.2)" },
@@ -104,14 +149,11 @@ export default function Home() {
               <Text style={styles.statCardUnit}>NÍVEL</Text>
             </View>
             <View style={styles.progressBarBg}>
-              <View
-                style={[
-                  styles.progressBarFill,
-                  { width: `${progressPercent}%` },
-                ]}
+              <Animated.View
+                style={[styles.progressBarFill, progressBarAnimatedStyle]}
               />
             </View>
-          </View>
+          </MotiView>
         </View>
 
         {/* Assets to Sell */}
@@ -126,8 +168,14 @@ export default function Home() {
         </View>
 
         <View style={styles.assetsList}>
-          {assets.map((asset) => (
-            <View key={asset.id} style={styles.assetCard}>
+          {assets.map((asset, index) => (
+            <MotiView
+              key={asset.id}
+              from={{ opacity: 0, translateX: -12 }}
+              animate={{ opacity: asset.sold ? 0.5 : 1, translateX: 0 }}
+              transition={{ type: "timing", duration: 350, delay: index * 80 }}
+              style={styles.assetCard}
+            >
               <View style={styles.assetIconBox}>
                 {asset.name.toLowerCase().includes("casa") ? (
                   <HomeIcon size={24} color={colors.textSecondary} />
@@ -156,7 +204,7 @@ export default function Home() {
                 disabled={asset.sold}
                 style={styles.sellButton}
               />
-            </View>
+            </MotiView>
           ))}
         </View>
 
@@ -176,7 +224,7 @@ const styles = StyleSheet.create({
   },
   appHeader: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
     alignItems: "center",
     marginBottom: 32,
     position: "relative",
@@ -202,7 +250,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 12,
   },
-  alienIconBadge: {
+  profileButton: {
     width: 48,
     height: 48,
     borderRadius: 16,
@@ -212,22 +260,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "rgba(157, 255, 32, 0.05)",
   },
-  logoText: {
-    fontFamily: typography.fonts.condensed,
-    fontSize: 32,
-    color: colors.textPrimary,
-    letterSpacing: 1,
-    textShadowColor: colors.accentLime,
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 10,
-  },
-  smallAlienBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: "rgba(255, 255, 255, 0.05)",
-    justifyContent: "center",
-    alignItems: "center",
+  logoImage: {
+    width: 190,
+    height: undefined,
+    aspectRatio: 320 / 84,
   },
   balanceSection: {
     alignItems: "center",

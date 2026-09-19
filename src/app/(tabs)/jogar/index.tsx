@@ -47,18 +47,18 @@ export default function GamesList() {
         <View style={styles.appHeader}>
           <View style={styles.logoContainer}>
             <View style={styles.alienIconBadge}>
-              <UserRound size={24} color={colors.accentLime || "#9DFF20"} />
+              <UserRound size={24} color={colors.accentLime} />
             </View>
             <Text style={styles.logoText}>BIGGER BET</Text>
           </View>
           <View style={styles.smallAlienBadge}>
-            <UserRound size={16} color={colors.textSecondary || "#888"} />
+            <UserRound size={16} color={colors.textSecondary} />
           </View>
         </View>
 
         {/* Hero Card */}
         <GlowBorder
-          color={colors.accentLime || "#9DFF20"}
+          color={colors.accentLime}
           radius={24}
           style={styles.heroCard}
         >
@@ -131,7 +131,7 @@ export default function GamesList() {
           Eventos Catastróficos
         </Text>
         <GlowBorder
-          color={colors.accentLime || "#9DFF20"}
+          color={colors.accentLime}
           radius={24}
           style={styles.eventCardPlaceholder}
         >
@@ -146,7 +146,7 @@ export default function GamesList() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#09090B",
+    backgroundColor: colors.bgBase,
   },
   scrollContent: {
     padding: 24,
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: "#9DFF20",
+    borderColor: colors.accentLime,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "rgba(157, 255, 32, 0.05)",
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
   logoText: {
     fontFamily: typography.fonts.condensed,
     fontSize: 28,
-    color: "#FFF",
+    color: colors.textPrimary,
     letterSpacing: 1,
   },
   smallAlienBadge: {
@@ -190,33 +190,33 @@ const styles = StyleSheet.create({
 
   // Hero Card
   heroCard: {
-    backgroundColor: "#121214",
+    backgroundColor: colors.bgCard,
     padding: 24,
     alignItems: "center",
-    justifyContent: "center", // Adicionado para reforçar eixo principal
+    justifyContent: "center",
   },
   heroPreTitle: {
-    color: "#888",
+    color: colors.textSecondary,
     fontFamily: typography.fonts.bold,
     fontSize: 10,
     letterSpacing: 2,
     marginBottom: 12,
-    textAlign: "center", // Adicionado
+    textAlign: "center",
   },
   heroTitleWhite: {
-    color: "#FFF",
+    color: colors.textPrimary,
     fontFamily: typography.fonts.condensed,
     fontSize: 32,
     textAlign: "center",
     lineHeight: 34,
   },
   heroTitleGreen: {
-    color: "#9DFF20",
+    color: colors.accentLime,
     fontFamily: typography.fonts.condensed,
     fontSize: 48,
     textAlign: "center",
     lineHeight: 50,
-    textShadowColor: "#9DFF20",
+    textShadowColor: colors.accentLime,
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 10,
     marginBottom: 16,
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   heroText: {
-    color: "#D1D1D1",
+    color: colors.textSecondary,
     fontFamily: typography.fonts.regular,
     fontSize: 13,
     textAlign: "center",
@@ -236,23 +236,23 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   heroButton: {
-    backgroundColor: "#4355F9",
+    backgroundColor: colors.accentIndigo,
     width: "100%",
     paddingVertical: 16,
-    paddingHorizontal: 12, // Garantir respiro nas laterais do texto
+    paddingHorizontal: 12,
     borderRadius: 100,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#4355F9",
+    shadowColor: colors.accentIndigo,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.5,
     shadowRadius: 12,
   },
   heroButtonText: {
-    color: "#FFF",
+    color: colors.textPrimary,
     fontFamily: typography.fonts.bold,
     fontSize: 14,
-    textAlign: "center", // Adicionado
+    textAlign: "center",
   },
   disclaimerContainer: {
     marginTop: 12,
@@ -260,14 +260,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   disclaimerText: {
-    color: "#666",
+    color: colors.textSecondary,
     fontFamily: typography.fonts.regular,
     fontSize: 9,
     textAlign: "center",
     textTransform: "uppercase",
   },
   disclaimerTextGreen: {
-    color: "#3A7A10",
+    color: colors.accentLime,
     fontFamily: typography.fonts.bold,
   },
 
@@ -279,12 +279,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   sectionTitle: {
-    color: "#FFF",
+    color: colors.textPrimary,
     fontFamily: typography.fonts.bold,
     fontSize: 22,
   },
   sectionSubtitle: {
-    color: "#666",
+    color: colors.textSecondary,
     fontFamily: typography.fonts.regular,
     fontSize: 13,
     marginTop: 2,
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
   },
   gameCard: {
     flex: 1,
-    backgroundColor: "#121214",
+    backgroundColor: colors.bgCard,
     borderRadius: 16,
     padding: 16,
     alignItems: "center",
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
   gameName: {
-    color: "#888",
+    color: colors.textSecondary,
     fontFamily: typography.fonts.bold,
     fontSize: 10,
     textAlign: "center",
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
 
   // Eventos Catastróficos
   eventCardPlaceholder: {
-    backgroundColor: "#121214",
+    backgroundColor: colors.bgCard,
     height: 140,
   },
 });
