@@ -1,14 +1,59 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { View, Text, StyleSheet, FlatList, Dimensions, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Button } from '../../components/ui/Button';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ghost } from 'lucide-react-native';
+import { OnboardingSlide } from '../../components/ui/OnboardingSlide';
+import Animated, { useAnimatedScrollHandler, useSharedValue, useAnimatedStyle, interpolate, Extrapolation, interpolateColor } from 'react-native-reanimated';
 
-export default function OnboardingStep1() {
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+const SLIDES = [
+  {
+    id: '1',
+    image: require('../../../ref/scaping.png'),
+    description: 'Retome o controle\ne se divirta enquanto o faz.',
+  },
+  {
+    id: '2',
+    image: require('../../../ref/understanding.png'),
+    description: 'Entenda como funcionam as casas de aposta e aprenda a identificar os gatilhos.',
+  },
+  {
+    id: '3',
+    image: require('../../../ref/readytofight.png'),
+    description: 'Supere desafios diários, acompanhe seu progresso e ganhe recompensas por sua dedicação.',
+  },
+];
+
+export default function Onboarding() {
   const router = useRouter();
+  const flatListRef = useRef<FlatList>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  
+  const scrollX = useSharedValue(0);
+
+  const onScroll = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollX.value = event.contentOffset.x;
+    },
+  });
+
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const contentOffsetX = event.nativeEvent.contentOffset.x;
+    const index = Math.round(contentOffsetX / SCREEN_WIDTH);
+    setCurrentIndex(index);
+  };
+
+  const handleNext = () => {
+    if (currentIndex < SLIDES.length - 1) {
+      flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
+    } else {
+      router.push('/onboarding/terms');
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -16,25 +61,56 @@ export default function OnboardingStep1() {
         <Text style={styles.titleShadow}>BIGGER BET</Text>
         <Text style={styles.title}>BIGGER BET</Text>
       </View>
+
       <View style={styles.content}>
-        <View style={styles.imageCard}>
-          <Ghost size={120} color={colors.accentLime} />
-        </View>
-        <Text style={styles.description}>
-          Retome o controle{"\n"}e se divirta enquanto o faz.
-        </Text>
+        <Animated.FlatList
+          ref={flatListRef}
+          data={SLIDES}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item, index }) => <OnboardingSlide item={item} index={index} />}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          pagingEnabled
+          bounces={false}
+          onScroll={onScroll}
+          onMomentumScrollEnd={handleScroll}
+          scrollEventThrottle={16}
+        />
       </View>
+
       <View style={styles.footer}>
         <View style={styles.dots}>
-          <View style={[styles.dot, styles.activeDot]} />
-          <View style={styles.dot} />
-          <View style={styles.dot} />
+          {SLIDES.map((_, index) => {
+            const animatedDotStyle = useAnimatedStyle(() => {
+              const width = interpolate(
+                scrollX.value,
+                [(index - 1) * SCREEN_WIDTH, index * SCREEN_WIDTH, (index + 1) * SCREEN_WIDTH],
+                [8, 24, 8],
+                Extrapolation.CLAMP
+              );
+
+              const backgroundColor = interpolateColor(
+                scrollX.value,
+                [(index - 1) * SCREEN_WIDTH, index * SCREEN_WIDTH, (index + 1) * SCREEN_WIDTH],
+                ['rgba(255,255,255,0.2)', colors.accentIndigo, 'rgba(255,255,255,0.2)']
+              );
+
+              return {
+                width,
+                backgroundColor,
+              };
+            });
+
+            return (
+              <Animated.View key={index} style={[styles.dot, animatedDotStyle]} />
+            );
+          })}
         </View>
         <Button 
-          title="CONTINUAR" 
+          title={currentIndex === SLIDES.length - 1 ? "COMEÇAR" : "CONTINUAR"} 
           variant="primary" 
           fullWidth 
-          onPress={() => router.push('/onboarding/step-2')} 
+          onPress={handleNext} 
         />
       </View>
     </SafeAreaView>
@@ -67,31 +143,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    alignItems: 'center',
-    paddingHorizontal: 32,
-  },
-  imageCard: {
-    width: '100%',
-    aspectRatio: 0.8,
-    backgroundColor: 'rgba(157, 255, 32, 0.05)',
-    borderRadius: 40,
-    borderWidth: 2,
-    borderColor: colors.accentLime,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 40,
-    shadowColor: colors.accentLime,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    elevation: 10,
-  },
-  description: {
-    fontFamily: typography.fonts.regular,
-    fontSize: 18,
-    color: colors.textPrimary,
-    textAlign: 'center',
-    lineHeight: 28,
   },
   footer: {
     padding: 32,
@@ -103,13 +154,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   dot: {
-    width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: 'rgba(255,255,255,0.2)',
   },
-  activeDot: {
-    backgroundColor: colors.accentIndigo,
-    width: 24,
-  }
 });

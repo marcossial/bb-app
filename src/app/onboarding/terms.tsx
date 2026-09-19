@@ -13,6 +13,7 @@ import { Button } from "../../components/ui/Button";
 import { useAppStore } from "../../store/useAppStore";
 import { colors } from "../../theme/colors";
 import { typography } from "../../theme/typography";
+import Animated, { FadeInDown } from "react-native-reanimated";
 
 export default function Terms() {
   const router = useRouter();
@@ -28,7 +29,7 @@ export default function Terms() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+      <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.header}>
         <FileText
           size={48}
           color={colors.accentLime}
@@ -36,9 +37,12 @@ export default function Terms() {
         />
         <Text style={styles.titleShadow}>TERMOS DE SERVIÇO</Text>
         <Text style={styles.title}>TERMOS DE SERVIÇO</Text>
-      </View>
+      </Animated.View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <Animated.ScrollView 
+        entering={FadeInDown.delay(200).springify()}
+        contentContainerStyle={styles.scrollContent}
+      >
         <View style={styles.termsBox}>
           <Text style={styles.termsText}>
             1. Você entende que este aplicativo é uma SÁTIRA e foi criado para
@@ -73,9 +77,9 @@ export default function Terms() {
             perder tudo.
           </Text>
         </TouchableOpacity>
-      </ScrollView>
+      </Animated.ScrollView>
 
-      <View style={styles.footer}>
+      <Animated.View entering={FadeInDown.delay(300).springify()} style={styles.footer}>
         <Button
           title="ACEITAR E ENTRAR →"
           variant={acceptedTerms ? "primary" : "ghost"}
@@ -83,7 +87,7 @@ export default function Terms() {
           onPress={handleAccept}
           disabled={!acceptedTerms}
         />
-      </View>
+      </Animated.View>
     </SafeAreaView>
   );
 }

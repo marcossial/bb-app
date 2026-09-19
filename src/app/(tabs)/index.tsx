@@ -160,7 +160,6 @@ export default function Home() {
           ))}
         </View>
 
-        {/* Extra spacing for tab bar */}
         <View style={{ height: 120 }} />
       </ScrollView>
     </SafeAreaView>

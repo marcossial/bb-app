@@ -11,6 +11,9 @@
     "ios": {
       "icon": "./assets/expo.icon"
     },
+    "androidNavigationBar": {
+      "visible": "sticky-immersive"
+    },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#0E0E0E",
@@ -19,16 +22,21 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.marcossial.biggerbetapp",
-      "navigationBar": {
-        "visible": "immersive"
-      }
+      "package": "com.marcossial.biggerbetapp"
     },
     "web": {
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      [
+        "expo-navigation-bar",
+        {
+          "enforceContrast": true,
+          "hidden": true,
+          "style": "light"
+        }
+      ],
       "expo-router",
       [
         "expo-splash-screen",

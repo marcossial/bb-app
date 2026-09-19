@@ -1,32 +1,26 @@
-import { useEffect } from 'react';
-import { Stack } from 'expo-router';
-import { useFonts as useBebas } from '@expo-google-fonts/bebas-neue';
-import { BebasNeue_400Regular } from '@expo-google-fonts/bebas-neue';
-import { 
-  useFonts as useFunnel,
+import { BebasNeue_400Regular } from "@expo-google-fonts/bebas-neue";
+import {
   FunnelSans_400Regular,
   FunnelSans_700Bold,
-  FunnelSans_800ExtraBold
-} from '@expo-google-fonts/funnel-sans';
-import * as SplashScreen from 'expo-splash-screen';
-import { colors } from '../theme/colors';
-import { StatusBar } from 'expo-status-bar';
+  FunnelSans_800ExtraBold,
+} from "@expo-google-fonts/funnel-sans";
+import { useFonts } from "expo-font";
+import { NavigationBar } from "expo-navigation-bar";
+import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
+import { colors } from "../theme/colors";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const [bebasLoaded, bebasError] = useBebas({
+  const [loaded, error] = useFonts({
     BebasNeue_400Regular,
-  });
-
-  const [funnelLoaded, funnelError] = useFunnel({
     FunnelSans_400Regular,
     FunnelSans_700Bold,
     FunnelSans_800ExtraBold,
   });
-
-  const loaded = bebasLoaded && funnelLoaded;
-  const error = bebasError || funnelError;
 
   useEffect(() => {
     if (loaded || error) {
@@ -41,12 +35,13 @@ export default function RootLayout() {
   return (
     <>
       <StatusBar style="light" />
-      <Stack 
-        screenOptions={{ 
+      <NavigationBar style="light" hidden={true} />
+      <Stack
+        screenOptions={{
           headerShown: false,
           contentStyle: { backgroundColor: colors.bgBase },
-          animation: 'fade',
-        }} 
+          animation: "fade",
+        }}
       >
         <Stack.Screen name="index" />
         <Stack.Screen name="onboarding" />
