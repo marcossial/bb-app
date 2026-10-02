@@ -14,42 +14,46 @@ import { useAppStore, XP_PER_LEVEL } from "../store/useAppStore";
 import { colors } from "../theme/colors";
 import { typography } from "../theme/typography";
 
-const ACHIEVEMENTS = [
-  {
-    id: "1",
-    icon: "📉",
-    title: "Primeiro Loss",
-    description: "Perdeu seus primeiros R$ 1.000 em uma única aposta.",
-  },
-  {
-    id: "2",
-    icon: "🏠",
-    title: "Sem Teto",
-    description: "Vendeu a própria casa para tentar recuperar o prejuízo.",
-  },
-  {
-    id: "3",
-    icon: "🚶",
-    title: "Andando a Pé",
-    description: "O carro foi de base. Bem-vindo ao transporte público.",
-  },
-  {
-    id: "4",
-    icon: "💎",
-    title: "Cliente VIP do Agiota",
-    description: "Atingiu o nível máximo de tristeza no app.",
-  },
-];
-
 export default function Profile() {
   const router = useRouter();
-  const { username, sadnessLevel, xp, generateInitialName } = useAppStore();
+  const { username, sadnessLevel, xp, generateInitialName, assets } = useAppStore();
 
   useEffect(() => {
     if (generateInitialName) {
       generateInitialName();
     }
   }, []);
+
+  const ACHIEVEMENTS = [
+    {
+      id: "1",
+      icon: "📉",
+      title: "Primeiro Loss",
+      description: "Perdeu seus primeiros R$ 1.000 em uma única aposta.",
+      isUnlocked: xp > 0,
+    },
+    {
+      id: "2",
+      icon: "🏠",
+      title: "Sem Teto",
+      description: "Vendeu a própria casa para tentar recuperar o prejuízo.",
+      isUnlocked: assets.find(a => a.id === "house")?.sold || false,
+    },
+    {
+      id: "3",
+      icon: "🚶",
+      title: "Andando a Pé",
+      description: "O carro foi de base. Bem-vindo ao transporte público.",
+      isUnlocked: assets.find(a => a.id === "car")?.sold || false,
+    },
+    {
+      id: "4",
+      icon: "💎",
+      title: "Cliente VIP do Agiota",
+      description: "Atingiu o nível máximo de tristeza no app.",
+      isUnlocked: sadnessLevel >= 5,
+    },
+  ];
 
   const progressPercent = (xp % XP_PER_LEVEL) / (XP_PER_LEVEL / 100);
   const xpToNextLevel = XP_PER_LEVEL - (xp % XP_PER_LEVEL);
@@ -125,14 +129,14 @@ export default function Profile() {
 
         <View style={styles.achievementsList}>
           {ACHIEVEMENTS.map((achievement) => (
-            <View key={achievement.id} style={styles.achievementCard}>
-              <View style={styles.emojiContainer}>
-                <Text style={styles.emojiText}>{achievement.icon}</Text>
+            <View key={achievement.id} style={[styles.achievementCard, !achievement.isUnlocked && styles.achievementLocked]}>
+              <View style={[styles.emojiContainer, !achievement.isUnlocked && styles.emojiLocked]}>
+                <Text style={styles.emojiText}>{achievement.isUnlocked ? achievement.icon : "🔒"}</Text>
               </View>
               <View style={styles.achievementInfo}>
-                <Text style={styles.achievementTitle}>{achievement.title}</Text>
+                <Text style={[styles.achievementTitle, !achievement.isUnlocked && styles.textLocked]}>{achievement.title}</Text>
                 <Text style={styles.achievementDesc}>
-                  {achievement.description}
+                  {achievement.isUnlocked ? achievement.description : "Continue apostando para desbloquear."}
                 </Text>
               </View>
             </View>
@@ -309,5 +313,15 @@ const styles = StyleSheet.create({
     fontFamily: typography.fonts.regular,
     fontSize: typography.sizes.sm,
     lineHeight: 20,
+  },
+  achievementLocked: {
+    opacity: 0.6,
+    borderColor: "rgba(255, 255, 255, 0.05)",
+  },
+  emojiLocked: {
+    backgroundColor: "rgba(255, 255, 255, 0.02)",
+  },
+  textLocked: {
+    color: colors.textSecondary,
   },
 });
