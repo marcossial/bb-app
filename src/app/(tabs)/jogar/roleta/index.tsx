@@ -1,6 +1,13 @@
 import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
-import { Alert, StyleSheet, Text, TouchableOpacity, View, TextInput } from "react-native";
+import {
+  Alert,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -16,7 +23,7 @@ import { typography } from "../../../../theme/typography";
 
 import { ChevronDown, HelpCircle, Minus, Plus } from "lucide-react-native";
 
-const WIN_MULTIPLIER = 14;
+const WIN_MULTIPLIER = 2;
 
 const WHEEL_SIZE = 210;
 const DISC_SIZE = 190;
@@ -143,7 +150,7 @@ export default function RoletaGame() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-          <Text style={styles.balanceText}>{formatBRL(balance)}</Text>
+        <Text style={styles.balanceText}>{formatBRL(balance)}</Text>
         <TouchableOpacity
           onPress={() => router.push("/(tabs)/jogar/roleta/info")}
           style={styles.infoIconBtn}
@@ -235,16 +242,29 @@ export default function RoletaGame() {
             onPress={() => setBetAmount(Math.max(1, betAmount - 10))}
             disabled={playing}
           >
-            <Minus size={20} color={playing ? colors.textSecondary : colors.textPrimary} />
+            <Minus
+              size={20}
+              color={playing ? colors.textSecondary : colors.textPrimary}
+            />
           </TouchableOpacity>
           <View style={styles.betAmountContainer}>
             <Text style={styles.betLabel}>APOSTA</Text>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Text style={[styles.betValue, playing && { color: colors.textSecondary }, { marginRight: 4 }]}>
+              <Text
+                style={[
+                  styles.betValue,
+                  playing && { color: colors.textSecondary },
+                  { marginRight: 4 },
+                ]}
+              >
                 R$
               </Text>
               <TextInput
-                style={[styles.betValue, playing && { color: colors.textSecondary }, { padding: 0, minWidth: 40, textAlign: "center" }]}
+                style={[
+                  styles.betValue,
+                  playing && { color: colors.textSecondary },
+                  { padding: 0, minWidth: 40, textAlign: "center" },
+                ]}
                 keyboardType="numeric"
                 value={betAmount.toString()}
                 onChangeText={(text) => {
@@ -260,7 +280,10 @@ export default function RoletaGame() {
             onPress={() => setBetAmount(betAmount + 10)}
             disabled={playing}
           >
-            <Plus size={20} color={playing ? colors.textSecondary : colors.textPrimary} />
+            <Plus
+              size={20}
+              color={playing ? colors.textSecondary : colors.textPrimary}
+            />
           </TouchableOpacity>
         </View>
 

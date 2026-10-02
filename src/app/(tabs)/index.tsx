@@ -4,8 +4,7 @@ import {
   Box,
   Car,
   Frown,
-  Home as HomeIcon,
-  UserRound,
+  Home as HomeIcon
 } from "lucide-react-native";
 import { MotiView } from "moti";
 import { useEffect } from "react";
@@ -59,19 +58,22 @@ export default function Home() {
           style={styles.appHeader}
         >
           <View style={styles.logoContainer}>
-            <TouchableOpacity
-              style={styles.profileButton}
-              onPress={() => router.push("/profile")}
-              activeOpacity={0.7}
-            >
-              <UserRound size={24} color={colors.accentLime} />
-            </TouchableOpacity>
             <Image
               source={require("../../../assets/images/biggerbet_logo.png")}
               style={styles.logoImage}
               resizeMode="contain"
             />
           </View>
+          <TouchableOpacity
+            style={styles.profileButton}
+            onPress={() => router.push("/profile")}
+            activeOpacity={0.7}
+          >
+            <Image
+              source={{ uri: "https://i.pravatar.cc/150?img=11" }}
+              style={{ width: "100%", height: "100%", borderRadius: 15 }}
+            />
+          </TouchableOpacity>
           <View style={styles.headerNeonBorder} />
         </MotiView>
 
@@ -224,7 +226,7 @@ const styles = StyleSheet.create({
   },
   appHeader: {
     flexDirection: "row",
-    justifyContent: "flex-start",
+    justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 32,
     position: "relative",
