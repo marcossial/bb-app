@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { Alert, StyleSheet, Text, TouchableOpacity, View, TextInput } from "react-native";
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View, TextInput } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -150,7 +150,8 @@ export default function MinesGame() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
           <Text style={styles.balanceText}>{formatBRL(balance)}</Text>
         <TouchableOpacity
           onPress={() => router.push("/(tabs)/jogar/mines/info")}
@@ -268,6 +269,7 @@ export default function MinesGame() {
           disabled={bottomDisabled}
         />
       </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -277,6 +279,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.bgBase,
     paddingHorizontal: 16,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 100,
   },
   header: {
     flexDirection: "row",

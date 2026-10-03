@@ -2,6 +2,7 @@ import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import {
   Alert,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -149,7 +150,8 @@ export default function RoletaGame() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
         <Text style={styles.balanceText}>{formatBRL(balance)}</Text>
         <TouchableOpacity
           onPress={() => router.push("/(tabs)/jogar/roleta/info")}
@@ -301,6 +303,7 @@ export default function RoletaGame() {
           disabled={!canPlay}
         />
       </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -310,6 +313,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.bgBase,
     paddingHorizontal: 16,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 100,
   },
   header: {
     flexDirection: "row",
